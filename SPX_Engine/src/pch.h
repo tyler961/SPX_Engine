@@ -16,6 +16,7 @@
 #include <array>
 #include <set>
 #include <stdexcept>
+#include <map>
 
 #include "../src/SPX/Log.h"
 #include "vulkan/vulkan.h"

@@ -10,7 +10,7 @@ void Log::init()
 {
 	spdlog::set_pattern("%^[%T] %n: %v%$");
 
-	s_CoreLogger = spdlog::stderr_color_mt("SPX");
+	s_CoreLogger = spdlog::stderr_color_mt("::ENGINE:");
 	s_CoreLogger->set_level(spdlog::level::trace);
 
 	s_ClientLogger = spdlog::stderr_color_mt("APP");

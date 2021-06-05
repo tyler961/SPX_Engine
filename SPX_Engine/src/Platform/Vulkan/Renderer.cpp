@@ -1,10 +1,14 @@
 #include "Renderer.h"
 
-Renderer::Renderer()
+Renderer::Renderer(Window* window)
+	: mWindow(window), mDevice(nullptr)
 {
 	createInstance();
 	setupDebug();
-	CORE_INFO("Renderer Constructor called.");
+	createSurface();
+	mDevice = new Device(mSurface);
+	mDevice->pickPhysicalDevice(mInstance);
+	mDevice->createLogicalDevice(mValLayers);
 }
 
 void Renderer::createInstance()
@@ -66,5 +70,10 @@ void Renderer::setupDebug()
 
 void Renderer::createSurface()
 {
+	// Link the window from GLFW to vulkan
+	if (glfwCreateWindowSurface(mInstance, mWindow->getContext(), nullptr, &mSurface) != VK_SUCCESS)
+		CORE_ERROR("Failed to create Vulkan Surface.");
+	else
+		CORE_INFO("Vulkan Surface created successfully.");
 }
 

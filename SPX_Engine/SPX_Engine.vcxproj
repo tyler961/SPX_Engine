@@ -163,6 +163,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\Vulkan\Device.cpp" />
     <ClCompile Include="src\Platform\Vulkan\Renderer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\ValidationLayers.cpp" />
     <ClCompile Include="src\SPX\Engine.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="src\SPX\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\Vulkan\Device.h" />
     <ClInclude Include="src\Platform\Vulkan\Renderer.h" />
     <ClInclude Include="src\Platform\Vulkan\ValidationLayers.h" />
     <ClInclude Include="src\SPX\Core.h" />
