@@ -163,12 +163,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Platform\Vulkan\CommandBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\Device.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\FrameBuffer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\GraphicsPipeline.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\Image.cpp" />
     <ClCompile Include="src\Platform\Vulkan\ImageView.cpp" />
     <ClCompile Include="src\Platform\Vulkan\Renderer.cpp" />
     <ClCompile Include="src\Platform\Vulkan\Shader.cpp" />
     <ClCompile Include="src\Platform\Vulkan\SwapChain.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\Texture.cpp" />
     <ClCompile Include="src\Platform\Vulkan\ValidationLayers.cpp" />
     <ClCompile Include="src\SPX\Engine.cpp" />
     <ClCompile Include="src\SPX\Log.cpp" />
@@ -177,12 +181,16 @@
     <ClCompile Include="src\SPX\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Platform\Vulkan\CommandBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\Device.h" />
+    <ClInclude Include="src\Platform\Vulkan\FrameBuffer.h" />
     <ClInclude Include="src\Platform\Vulkan\GraphicsPipeline.h" />
+    <ClInclude Include="src\Platform\Vulkan\Image.h" />
     <ClInclude Include="src\Platform\Vulkan\ImageView.h" />
     <ClInclude Include="src\Platform\Vulkan\Renderer.h" />
     <ClInclude Include="src\Platform\Vulkan\Shader.h" />
     <ClInclude Include="src\Platform\Vulkan\SwapChain.h" />
+    <ClInclude Include="src\Platform\Vulkan\Texture.h" />
     <ClInclude Include="src\Platform\Vulkan\ValidationLayers.h" />
     <ClInclude Include="src\Platform\Vulkan\Vertex.h" />
     <ClInclude Include="src\SPX\Core.h" />
@@ -190,6 +198,8 @@
     <ClInclude Include="src\SPX\Log.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\SPX\Window.h" />
+    <ClInclude Include="src\stb_image\stb_image.h" />
+    <ClInclude Include="src\tiny_obj_loader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="src\ShaderFiles\shader.frag" />

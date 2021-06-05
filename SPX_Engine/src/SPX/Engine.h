@@ -24,7 +24,7 @@ public:
 
 
 private:
-
+	void drawFrame();
 
 };
 

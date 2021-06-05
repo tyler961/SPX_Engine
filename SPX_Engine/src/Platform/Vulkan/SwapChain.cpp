@@ -111,6 +111,11 @@ void SwapChain::createSwapChaimImageViews(VkDevice device)
 	ImageView::createImageViews(mSwapChainImages, mSwapChainImageViews, mSwapChainImageFormat, mSwapChainExtent, device);
 }
 
+void SwapChain::createSwapChainFrameBuffers(VkDevice device, VkImageView depthImageView, VkRenderPass renderPass)
+{
+	FrameBuffer::createFrameBuffers(mSwapChainExtent, mSwapChainFrameBuffers, mSwapChainImageViews, depthImageView, renderPass, device);
+}
+
 VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	for (const auto& availableFormat : availableFormats)

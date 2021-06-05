@@ -4,6 +4,7 @@
 #include "Device.h" // Allow me to use the swapchain support functionailty
 #include "../../SPXENGINE/SPX_Engine/SPX_Engine/src/SPX/Window.h"
 #include "ImageView.h"
+#include "FrameBuffer.h"
 
 
 // ******************************************************************************************************************************
@@ -21,6 +22,7 @@ public:
 	SwapChain(VkPhysicalDevice physicalDevice, VkDevice device, VkSurfaceKHR surface);
 	void createSwapChain(Window* window);
 	void createSwapChaimImageViews(VkDevice device);
+	void createSwapChainFrameBuffers(VkDevice device, VkImageView depthImageView, VkRenderPass renderPass);
 
 	VkPhysicalDevice mPhysicalDevice;
 	VkDevice mDevice;
@@ -31,6 +33,8 @@ public:
 	VkFormat mSwapChainImageFormat;
 	VkExtent2D mSwapChainExtent;
 	std::vector<VkImageView> mSwapChainImageViews;
+
+	std::vector<VkFramebuffer> mSwapChainFrameBuffers;
 
 private:
 	VkSurfaceFormatKHR chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats);

@@ -1,7 +1,9 @@
 #include "Renderer.h"
+#define TINYOBJLOADER_IMPLEMENTATION
+#include "../../tiny_obj_loader/tiny_obj_loader.h"
 
 Renderer::Renderer(Window* window)
-	: mWindow(window), mDevice(nullptr), mSwapChain(nullptr), mPipeline(nullptr)
+	: mWindow(window), mDevice(nullptr), mSwapChain(nullptr), mPipeline(nullptr), mCommandBuffer(nullptr), mTexture(nullptr)
 {
 	createInstance();
 	setupDebug();
@@ -17,6 +19,22 @@ Renderer::Renderer(Window* window)
 	mPipeline = new GraphicsPipeline("src/ShaderFiles/vert.spv", "src/ShaderFiles/frag.spv", mDevice->mLogicalDevice);
 	mPipeline->createGraphicsPipeline(mDevice->mLogicalDevice, mSwapChain->mSwapChainExtent, mDescriptorSetLayout, mRenderPass);
 	createCommandPool();
+	createDepthResources();
+	mSwapChain->createSwapChainFrameBuffers(mDevice->mLogicalDevice, mDepthImageView, mRenderPass);
+	mTexture = new Texture("Media/Textures/chalet.jpg");
+	mTexture->createTextureImage(mDevice->mLogicalDevice, mDevice->mPhysicalDevice, mCommandPool, mDevice->mGraphicsQueue);
+	mTexture->createTextureImageView(mDevice->mLogicalDevice);
+	mTexture->createTextureSampler(mDevice->mPhysicalDevice, mDevice->mLogicalDevice);
+	loadModel("Media/Obj/chalet.obj");
+	createVertexBuffer();
+	createIndexBuffer();
+	createUniformBuffers();
+	createDescriptorPool();
+	createDescriptorSets();
+	mCommandBuffer = new CommandBuffer();
+	mCommandBuffer->createCommandBuffers(mSwapChain->mSwapChainFrameBuffers, mCommandPool, mRenderPass, mSwapChain->mSwapChainExtent,
+		mPipeline->mGraphicsPipeline, mPipeline->mPipelineLayout, mVertexBuffer, mIndexBuffer, mDescriptorSets, indices, mDevice->mLogicalDevice);
+	createSyncObjects();
 }
 
 void Renderer::createInstance()
@@ -232,6 +250,324 @@ void Renderer::createCommandPool()
 		CORE_INFO("Command Pool creation successful.");
 }
 
+void Renderer::createDepthResources()
+{
+	VkFormat depthFormat = findDepthFormat();
+
+	Image::createImage(mSwapChain->mSwapChainExtent.width, mSwapChain->mSwapChainExtent.height, depthFormat,
+		VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
+		mDepthImage, mDepthImageMemory, mDevice->mLogicalDevice, mDevice->mPhysicalDevice);
+
+	mDepthImageView = ImageView::createImageView(mDepthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, mDevice->mLogicalDevice);
+}
+
+void Renderer::loadModel(std::string modelPath)
+{
+	tinyobj::attrib_t attrib;
+	std::vector<tinyobj::shape_t> shapes;
+	std::vector<tinyobj::material_t> materials;
+	std::string warn, err;
+
+	if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, modelPath.c_str())) {
+		throw std::runtime_error(warn + err);
+	}
+
+	std::unordered_map<Vertex, SPX_INT> uniqueVertices{};
+
+	for (const auto& shape : shapes)
+	{
+		for (const auto& index : shape.mesh.indices)
+		{
+			Vertex vertex{};
+
+			vertex.pos =
+			{
+				attrib.vertices[3 * index.vertex_index + 0],
+				attrib.vertices[3 * index.vertex_index + 1],
+				attrib.vertices[3 * index.vertex_index + 2]
+			};
+
+			vertex.texCoord =
+			{
+				attrib.texcoords[2 * index.texcoord_index + 0],
+				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
+			};
+
+			vertex.color = { 1.0f, 1.0f, 1.0f };
+
+			if (uniqueVertices.count(vertex) == 0)
+			{
+				uniqueVertices[vertex] = static_cast<SPX_INT>(vertices.size());
+				vertices.push_back(vertex);
+			}
+
+			indices.push_back(uniqueVertices[vertex]);
+		}
+	}
+
+	CORE_INFO("Model loaded successfully.");
+}
+
+void Renderer::createVertexBuffer()
+{
+	// Going to create a visible buffer as a temporary buffer and use
+	// a device local one as actual vertex buffer. CHANGED TO THIS PG 168
+	// Using the stagingBuffer and stagingBufferMemory for mapping and copying the vertex data.
+	VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+	FrameBuffer::createBuffer(
+		bufferSize, 
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+		stagingBuffer, 
+		stagingBufferMemory,
+		mDevice->mPhysicalDevice,
+		mDevice->mLogicalDevice);
+
+	// pg 163
+	// This allows me to access a region of the specified memory resource defined by an offset and size.
+	// Possible to specify the special value VK_WHOLE_SIZE to mapp all of the memory.
+	// Second to last param is used to specify flags, but there aren't any available yet.
+	// Last param specifies the output for the pointer to the mapped memory
+	void* data; // Find out wtf this is
+	vkMapMemory(mDevice->mLogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	// use memcpy the vertex data to the mapped memory and unmap it again.
+	// Possible problems: The driver may not immediately copy the data into the buffer memory, for ex bc of caching.
+	// Also possible that it writes to the buffer and isnt visible in the mapped memroy yet. Two ways to deal with that problem
+	// Use a memory heap that is host coherent, indicated with VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
+	// Call vkFlushMappedMemoryRanges to after writing to the mapped memory, and call vkInvailidateMappedMemoryRanges before
+	// reading from the mapped memory.
+	// Went with the first aproach for now. Look into the other on. PAGE 163
+	memcpy(data, vertices.data(), (size_t)bufferSize);
+	vkUnmapMemory(mDevice->mLogicalDevice, stagingBufferMemory);
+
+	FrameBuffer::createBuffer(
+		bufferSize, 
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		mVertexBuffer, 
+		mVertexBufferMemory,
+		mDevice->mPhysicalDevice,
+		mDevice->mLogicalDevice);
+
+	FrameBuffer::copyBuffer(
+		stagingBuffer, 
+		mVertexBuffer, 
+		bufferSize, 
+		mCommandPool,
+		mDevice->mGraphicsQueue,
+		mDevice->mLogicalDevice);
+
+	vkDestroyBuffer(mDevice->mLogicalDevice, stagingBuffer, nullptr);
+	vkFreeMemory(mDevice->mLogicalDevice, stagingBufferMemory, nullptr);
+
+	CORE_INFO("Vertex Buffer created successfully.");
+}
+
+
+// Going to be very similar to vertex buffer
+// Two differences. The buffersize is now equal to the number of indices times the size of the index type.
+// The usage of the indexBuffer should be VK_BUFFER_USAGE_INDEX_BUFFER_BIT of course.
+// Otherwise it's exactly the same
+// Create a staging buffer to copy the contents of indices to and then copy it to the final device local index buffer.
+void Renderer::createIndexBuffer()
+{
+	VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();
+
+	VkBuffer stagingBuffer;
+	VkDeviceMemory stagingBufferMemory;
+
+	FrameBuffer::createBuffer(
+		bufferSize, 
+		VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, 
+		stagingBuffer, 
+		stagingBufferMemory,
+		mDevice->mPhysicalDevice,
+		mDevice->mLogicalDevice);
+
+	void* data;
+	vkMapMemory(mDevice->mLogicalDevice, stagingBufferMemory, 0, bufferSize, 0, &data);
+	memcpy(data, indices.data(), (size_t)bufferSize);
+	vkUnmapMemory(mDevice->mLogicalDevice, stagingBufferMemory);
+
+	FrameBuffer::createBuffer(
+		bufferSize, 
+		VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, 
+		mIndexBuffer, 
+		mIndexBufferMemory,
+		mDevice->mPhysicalDevice,
+		mDevice->mLogicalDevice);
+
+	FrameBuffer::copyBuffer(
+		stagingBuffer, 
+		mIndexBuffer, 
+		bufferSize,
+		mCommandPool,
+		mDevice->mGraphicsQueue,
+		mDevice->mLogicalDevice);
+
+	vkDestroyBuffer(mDevice->mLogicalDevice, stagingBuffer, nullptr);
+	vkFreeMemory(mDevice->mLogicalDevice, stagingBufferMemory, nullptr);
+
+	CORE_INFO("Index Buffer created successfully.");
+}
+
+void Renderer::createUniformBuffers()
+{
+	VkDeviceSize bufferSize = sizeof(UniformBufferObject);
+
+	mUniformBuffers.resize(mSwapChain->mSwapChainImages.size());
+	mUniformBuffersMemory.resize(mSwapChain->mSwapChainImages.size());
+
+	for (size_t i = 0; i < mSwapChain->mSwapChainImages.size(); i++) {
+		FrameBuffer::createBuffer(
+			bufferSize, 
+			VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, 
+			VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+			mUniformBuffers[i], 
+			mUniformBuffersMemory[i],
+			mDevice->mPhysicalDevice,
+			mDevice->mLogicalDevice);
+	}
+
+	CORE_INFO("Uniform Buffers created successfully.");
+}
+
+// Page 187
+// Updated page 222
+void Renderer::createDescriptorPool()
+{
+	// Describe which descriptor types my descriptor sets are going to contain and how many of them
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	// Allocate on of these descriptors for every frame
+	poolSizes[0].descriptorCount = static_cast<uint32_t>(mSwapChain->mSwapChainImages.size());
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = static_cast<uint32_t>(mSwapChain->mSwapChainImages.size());
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = static_cast<uint32_t>(mSwapChain->mSwapChainImages.size());
+
+	if (vkCreateDescriptorPool(mDevice->mLogicalDevice, &poolInfo, nullptr, &mDescriptorPool) != VK_SUCCESS)
+		CORE_ERROR("Failed to create Descriptor Pool.");
+}
+
+void Renderer::createDescriptorSets()
+{
+	// Create one descriptor set for each swap chain image all with the same layout.
+	std::vector<VkDescriptorSetLayout> layouts(mSwapChain->mSwapChainImages.size(), mDescriptorSetLayout);
+	VkDescriptorSetAllocateInfo allocInfo{};
+	allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+	allocInfo.descriptorPool = mDescriptorPool;
+	allocInfo.descriptorSetCount = static_cast<uint32_t>(mSwapChain->mSwapChainImages.size());
+	allocInfo.pSetLayouts = layouts.data();
+
+	mDescriptorSets.resize(mSwapChain->mSwapChainImages.size());
+	if (vkAllocateDescriptorSets(mDevice->mLogicalDevice, &allocInfo, mDescriptorSets.data()) != VK_SUCCESS)
+		CORE_ERROR("Failed to allocate descriptor sets.");
+
+	for (size_t i = 0; i < mSwapChain->mSwapChainImages.size(); i++)
+	{
+		VkDescriptorBufferInfo bufferInfo{};
+		bufferInfo.buffer = mUniformBuffers[i];
+		bufferInfo.offset = 0;
+		bufferInfo.range = sizeof(UniformBufferObject);
+
+		// Updated this stuff on page 222-223
+		VkDescriptorImageInfo imageInfo{};
+		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		imageInfo.imageView = mTexture->mTextureImageView;
+		imageInfo.sampler = mTexture->mTextureSampler;
+
+		std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+
+		descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[0].dstSet = mDescriptorSets[i];
+		descriptorWrites[0].dstBinding = 0;
+		descriptorWrites[0].dstArrayElement = 0;
+		descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+		descriptorWrites[0].descriptorCount = 1;
+		descriptorWrites[0].pBufferInfo = &bufferInfo;
+
+		descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		descriptorWrites[1].dstSet = mDescriptorSets[i];
+		descriptorWrites[1].dstBinding = 1;
+		descriptorWrites[1].dstArrayElement = 0;
+		descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+		descriptorWrites[1].descriptorCount = 1;
+		descriptorWrites[1].pImageInfo = &imageInfo;
+
+		vkUpdateDescriptorSets(mDevice->mLogicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
+	}
+}
+
+void Renderer::createSyncObjects()
+{
+	// Resize to how many frames I want to be worked on at the end of drawFrame()
+	mImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	mRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+	mInFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+	mImagesInFlight.resize(mSwapChain->mSwapChainImages.size(), VK_NULL_HANDLE);
+	std::cout << "mImagesInFlight: " << mImagesInFlight.size() << std::endl;
+
+	VkSemaphoreCreateInfo semaphoreInfo = {};
+	semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+	// Create fence info struct
+	VkFenceCreateInfo fenceInfo = {};
+	fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	// NEEDED since fences are created in an unsignaled state. It will wait forever if this is not set freezing the program
+	fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+	// Loop to build all the semaphores needed so each frame has it's own
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+	{
+		if (vkCreateSemaphore(mDevice->mLogicalDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
+			vkCreateSemaphore(mDevice->mLogicalDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
+			vkCreateFence(mDevice->mLogicalDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS)
+			CORE_ERROR("Failed to create synchronization objects for a frame.");
+	}
+}
+
+void Renderer::updateUniformBuffer(SPX_INT currentImage)
+{
+	// Calculate time in seconds
+	static auto startTime = std::chrono::high_resolution_clock::now();
+	auto currentTime = std::chrono::high_resolution_clock::now();
+	float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+	UniformBufferObject ubo = {};
+	// Rotate 90 degress per second
+	// existing transform, rotation angle and rotation axis as prams
+	ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	// Look at the geometry from above at 45 degree angle.
+	// eyepos, center pos, up axis are the params
+	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	// Perspective projection with 45 degree vertial field of view.
+	// Next param is aspect ratio, near and far view planes.
+	// Important to use current swapchain extent incase the window is resized.
+	ubo.proj = glm::perspective(glm::radians(45.0f), mSwapChain->mSwapChainExtent.width / (float)mSwapChain->mSwapChainExtent.height, 0.1f, 10.0f);
+	// GLM has the Y coordinate flipped, so I have to flip it by timesing by -1 or it will be rendered upsidedown
+	ubo.proj[1][1] *= -1;
+
+	// All transforms are defined now, so I can copy the data in the uniform buffer obj to the current uniform buffer.
+	// This happens the same as vertex buffer, but without the staging buffer becuase it gets called so often, it creates too much overhead
+	void* data;
+	vkMapMemory(mDevice->mLogicalDevice, mUniformBuffersMemory[currentImage], 0, sizeof(ubo), 0, &data);
+	memcpy(data, &ubo, sizeof(ubo));
+	vkUnmapMemory(mDevice->mLogicalDevice, mUniformBuffersMemory[currentImage]);
+
+	// Doing uniform buffers this way is not the most efficent way to pass frequently changing values to teh shader.
+	// A more efficent way to pass a small buffer of data to shaders are PUSH CONSTANTS.
+}
+
 VkFormat Renderer::findDepthFormat()
 {
 	return findSupportedFormat(
@@ -260,4 +596,3 @@ VkFormat Renderer::findSupportedFormat(
 
 	CORE_ERROR("Failed to find a supported format.");
 }
-

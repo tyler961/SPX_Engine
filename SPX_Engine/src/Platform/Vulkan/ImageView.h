@@ -26,9 +26,8 @@
 #include "../../pch.h"
 
 
-class ImageView
+struct ImageView
 {
-public:
 	ImageView();
 
 	static void createImageViews(
