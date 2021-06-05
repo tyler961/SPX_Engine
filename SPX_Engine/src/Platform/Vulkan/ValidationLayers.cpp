@@ -99,22 +99,31 @@ VKAPI_ATTR VkBool32 VKAPI_CALL ValidationLayers::debugCallback(
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
 	void* pUserData)
 {
-	std::cerr << "Validation Layer: " << pCallbackData->pMessage << std::endl;
-	/*if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+	//std::cerr << "Validation Layer: " << pCallbackData->pMessage << std::endl;
+	if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
 	{
-		CORE_WARN("Validation Layer: ");
+		std::cout << std::endl;
+		CORE_WARN("----------------------------------------------START----------------------------------------------");
 		CORE_WARN(pCallbackData->pMessage);
+		CORE_WARN("-----------------------------------------------END-----------------------------------------------");
+		std::cout << std::endl;
 	}
 	else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
 	{
-		CORE_ERROR("Validation Layer: ");
+		std::cout << std::endl;
+		CORE_ERROR("----------------------------------------------START----------------------------------------------");
 		CORE_ERROR(pCallbackData->pMessage);
+		CORE_ERROR("-----------------------------------------------END-----------------------------------------------");
+		std::cout << std::endl;
 	}
 	else
 	{
-		CORE_INFO("Validation Layer: ");
+		std::cout << std::endl;
+		CORE_INFO("----------------------------------------------START----------------------------------------------");
 		CORE_INFO(pCallbackData->pMessage);
-	}*/
+		CORE_INFO("-----------------------------------------------END-----------------------------------------------");
+		std::cout << std::endl;
+	}
 
 	return VK_FALSE;		
 }

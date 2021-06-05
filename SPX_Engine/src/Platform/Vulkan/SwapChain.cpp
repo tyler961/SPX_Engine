@@ -106,6 +106,11 @@ void SwapChain::createSwapChain(Window* window)
 	mSwapChainExtent = extent;
 }
 
+void SwapChain::createSwapChaimImageViews(VkDevice device)
+{
+	ImageView::createImageViews(mSwapChainImages, mSwapChainImageViews, mSwapChainImageFormat, mSwapChainExtent, device);
+}
+
 VkSurfaceFormatKHR SwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
 {
 	for (const auto& availableFormat : availableFormats)
