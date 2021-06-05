@@ -165,6 +165,7 @@
   <ItemGroup>
     <ClCompile Include="src\Platform\Vulkan\Device.cpp" />
     <ClCompile Include="src\Platform\Vulkan\Renderer.cpp" />
+    <ClCompile Include="src\Platform\Vulkan\SwapChain.cpp" />
     <ClCompile Include="src\Platform\Vulkan\ValidationLayers.cpp" />
     <ClCompile Include="src\SPX\Engine.cpp" />
     <ClCompile Include="src\SPX\Log.cpp" />
@@ -175,6 +176,7 @@
   <ItemGroup>
     <ClInclude Include="src\Platform\Vulkan\Device.h" />
     <ClInclude Include="src\Platform\Vulkan\Renderer.h" />
+    <ClInclude Include="src\Platform\Vulkan\SwapChain.h" />
     <ClInclude Include="src\Platform\Vulkan\ValidationLayers.h" />
     <ClInclude Include="src\SPX\Core.h" />
     <ClInclude Include="src\SPX\Engine.h" />

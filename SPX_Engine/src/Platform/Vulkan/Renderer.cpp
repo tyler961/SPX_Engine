@@ -9,6 +9,9 @@ Renderer::Renderer(Window* window)
 	mDevice = new Device(mSurface);
 	mDevice->pickPhysicalDevice(mInstance);
 	mDevice->createLogicalDevice(mValLayers);
+	mSwapChain = new SwapChain(mDevice->mPhysicalDevice, mDevice->mLogicalDevice, mSurface);
+	mSwapChain->createSwapChain(mWindow);
+
 }
 
 void Renderer::createInstance()

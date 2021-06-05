@@ -26,8 +26,16 @@ class Device
 public:
 	Device(VkSurfaceKHR surface);
 
+	void pickPhysicalDevice(VkInstance instance);
+	void createLogicalDevice(ValidationLayers valLayers);
+	void printPhysicalDeviceName();
+
+	static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
+	static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
+
+
 	VkPhysicalDevice mPhysicalDevice;
-	VkDevice mDevice;
+	VkDevice mLogicalDevice;
 	VkSurfaceKHR mSurface;
 
 	VkQueue mGraphicsQueue;
@@ -36,18 +44,9 @@ public:
 	// List of required device extensions
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
 
-	void printPhysicalDeviceName();
-
-	void pickPhysicalDevice(VkInstance instance);
+private:
 	VkPhysicalDevice pickBestPhysicalDevice(std::vector<VkPhysicalDevice> devices);
 	int rateDeviceSuitability(VkPhysicalDevice device);
 	bool isDeviceSuitable(VkPhysicalDevice device);
 	bool checkDeviceExtensionSupport(VkPhysicalDevice device);
-	SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
-	QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device);
-
-
-	void createLogicalDevice(ValidationLayers valLayers);
-
-private:
 };

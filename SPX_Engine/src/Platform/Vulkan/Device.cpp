@@ -1,7 +1,7 @@
 #include "Device.h"
 
 Device::Device(VkSurfaceKHR surface)
-	: mSurface(surface), mDevice(VK_NULL_HANDLE), mPhysicalDevice(VK_NULL_HANDLE)
+	: mSurface(surface), mLogicalDevice(VK_NULL_HANDLE), mPhysicalDevice(VK_NULL_HANDLE)
 {
 }
 
@@ -93,14 +93,14 @@ int Device::rateDeviceSuitability(VkPhysicalDevice device)
 bool Device::isDeviceSuitable(VkPhysicalDevice device)
 {
 	// Once a device has been selected, make sure it supports the required queue families.
-	QueueFamilyIndices indices = findQueueFamilies(device);
+	QueueFamilyIndices indices = findQueueFamilies(device, mSurface);
 
 	bool extensionsSupported = checkDeviceExtensionSupport(device);
 
 	bool swapChainAdequate = false;
 	if (extensionsSupported)
 	{
-		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device);
+		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device, mSurface);
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentMode.empty();
 	}
 
@@ -128,34 +128,36 @@ bool Device::checkDeviceExtensionSupport(VkPhysicalDevice device)
 	return requiredExensions.empty();
 }
 
-SwapChainSupportDetails Device::querySwapChainSupport(VkPhysicalDevice device)
+SwapChainSupportDetails Device::querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
 	SwapChainSupportDetails details;
 
-	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, mSurface, &details.capabilities);
+	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
 
 	SPX_INT formatCount;
-	vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, nullptr);
+	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
 	if (formatCount != 0)
 	{
 		details.formats.resize(formatCount);
-		vkGetPhysicalDeviceSurfaceFormatsKHR(device, mSurface, &formatCount, details.formats.data());
+		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
 	}
 
 	SPX_INT presentModeCount;
-	vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, nullptr);
+	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 
 	if (presentModeCount != 0)
 	{
 		details.presentMode.resize(presentModeCount);
-		vkGetPhysicalDeviceSurfacePresentModesKHR(device, mSurface, &presentModeCount, details.presentMode.data());
+		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentMode.data());
 	}
 
 	return details;
 }
 
-QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device)
+
+
+QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
 {
 	QueueFamilyIndices indices;
 	// Gets queue family info supported by the device
@@ -172,7 +174,7 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device)
 			indices.graphicsFamily = i;
 
 		VkBool32 presentSupport = false;
-		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, mSurface, &presentSupport);
+		vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
 
 		if (presentSupport)
 			indices.presentFamily = i;
@@ -191,7 +193,7 @@ QueueFamilyIndices Device::findQueueFamilies(VkPhysicalDevice device)
 
 void Device::createLogicalDevice(ValidationLayers valLayers)
 {
-	QueueFamilyIndices indices = findQueueFamilies(mPhysicalDevice);
+	QueueFamilyIndices indices = findQueueFamilies(mPhysicalDevice, mSurface);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
 	std::set<SPX_INT> uniqueQueueFamilies = { indices.graphicsFamily.value(), indices.presentFamily.value() };
@@ -235,15 +237,15 @@ void Device::createLogicalDevice(ValidationLayers valLayers)
 	// Now I can create the logical device
 	// I need the physical device to interface with, the queue and usage info I just specified, the optional allocation
 	// callback pointer and a pointer to a variable to store the logcial device handle in.
-	if (vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mDevice) != VK_SUCCESS)
+	if (vkCreateDevice(mPhysicalDevice, &createInfo, nullptr, &mLogicalDevice) != VK_SUCCESS)
 		CORE_ERROR("Failed to create logical device.");
 	else
 		CORE_INFO("Logcial Device created successfully");
 
 	// Retrieves handle for queue. Parameters are logical device, queue family, queue index and pointer 
 	// to the variable to store the handle in. Bc I'm only creating a single queu from this family, I can use index 0.
-	vkGetDeviceQueue(mDevice, indices.graphicsFamily.value(), 0, &mGraphicsQueue);
-	vkGetDeviceQueue(mDevice, indices.presentFamily.value(), 0, &mPresentQueue);
+	vkGetDeviceQueue(mLogicalDevice, indices.graphicsFamily.value(), 0, &mGraphicsQueue);
+	vkGetDeviceQueue(mLogicalDevice, indices.presentFamily.value(), 0, &mPresentQueue);
 }
 
 
