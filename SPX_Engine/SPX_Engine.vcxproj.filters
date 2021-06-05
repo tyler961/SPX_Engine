@@ -126,5 +126,7 @@
   <ItemGroup>
     <None Include="src\ShaderFiles\shader.vert" />
     <None Include="src\ShaderFiles\shader.frag" />
+    <None Include="src\ShaderFiles\frag.spv" />
+    <None Include="src\ShaderFiles\vert.spv" />
   </ItemGroup>
 </Project>

@@ -202,8 +202,10 @@
     <ClInclude Include="src\tiny_obj_loader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="src\ShaderFiles\frag.spv" />
     <None Include="src\ShaderFiles\shader.frag" />
     <None Include="src\ShaderFiles\shader.vert" />
+    <None Include="src\ShaderFiles\vert.spv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
