@@ -1,16 +1,17 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
-#include "Core.h" 
+#include "../pch.h"
+
+struct GLFWwindow;
 
 class Window
 {
 public:
-	Window(SPX_INT width, SPX_INT height, std::string title);
+	Window(uint32_t width, uint32_t height, std::string title);
 	~Window();
 	std::string mTitle;
-	SPX_INT mWidth;
-	SPX_INT mHeight;
+	uint32_t mWidth;
+	uint32_t mHeight;
 
 	GLFWwindow* getContext();
 

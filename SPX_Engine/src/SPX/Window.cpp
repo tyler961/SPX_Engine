@@ -1,7 +1,11 @@
 #include "../pch.h"
 #include "Window.h"
+#include "../Events/Event.h"
 
-Window::Window(SPX_INT width, SPX_INT height, std::string title)
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+Window::Window(uint32_t width, uint32_t height, std::string title)
 	:mTitle(title), mWidth(width), mHeight(height)
 {
 	glfwInit();
@@ -14,6 +18,11 @@ Window::Window(SPX_INT width, SPX_INT height, std::string title)
 
 	glfwSetWindowUserPointer(mContext, this);
 
+	glfwSetKeyCallback(mContext, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+	{
+
+	});
+			
 
 	// Callback for when the window is resized so swapchain can be recreated
 	// ADD LATER

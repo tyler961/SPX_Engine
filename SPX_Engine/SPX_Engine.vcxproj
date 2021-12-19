@@ -92,6 +92,7 @@
       <AdditionalIncludeDirectories>D:\Libraries C++\spdlog\include;D:\Libraries C++\glfw-3.3.4.bin.WIN64\include;D:\Libraries C++\glm;D:\Vulkan\1.2.170.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -112,6 +113,7 @@
       <AdditionalIncludeDirectories>D:\Libraries C++\spdlog\include;D:\Libraries C++\glfw-3.3.4.bin.WIN64\include;D:\Libraries C++\glm;D:\Vulkan\1.2.170.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -132,6 +134,7 @@
       <AdditionalIncludeDirectories>D:\Libraries C++\spdlog\include;D:\Libraries C++\glfw-3.3.4.bin.WIN64\include;D:\Libraries C++\glm;D:\Vulkan\1.2.170.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -152,6 +155,7 @@
       <AdditionalIncludeDirectories>D:\Libraries C++\spdlog\include;D:\Libraries C++\glfw-3.3.4.bin.WIN64\include;D:\Libraries C++\glm;D:\Vulkan\1.2.170.0\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <UndefinePreprocessorDefinitions>%(UndefinePreprocessorDefinitions)</UndefinePreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -163,42 +167,64 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\Platform\Vulkan\CommandBuffer.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\Device.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\FrameBuffer.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\GraphicsPipeline.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\Image.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\ImageView.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\Renderer.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\Shader.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\SwapChain.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\Texture.cpp" />
-    <ClCompile Include="src\Platform\Vulkan\ValidationLayers.cpp" />
+    <ClCompile Include="src\Renderer\Mesh.cpp" />
+    <ClCompile Include="src\Renderer\RenderObject.cpp" />
+    <ClCompile Include="src\Renderer\Texture.cpp" />
+    <ClCompile Include="src\Renderer\VulkanRenderer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VCommandBuffer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VFrameBuffer.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VGraphicsPipeline.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VCommandPool.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VDevice.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VImage.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VInstance.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VRenderPass.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VShader.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VSurface.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VSwapChain.cpp" />
+    <ClCompile Include="src\Renderer\VulkanWrapper\VulkanValidationLayers.cpp" />
+    <ClCompile Include="src\SPX\Camera.cpp" />
     <ClCompile Include="src\SPX\Engine.cpp" />
+    <ClCompile Include="src\SPX\Layer.cpp" />
     <ClCompile Include="src\SPX\Log.cpp" />
     <ClCompile Include="src\SPX\main.cpp" />
     <ClCompile Include="src\pch.cpp" />
     <ClCompile Include="src\SPX\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Platform\Vulkan\CommandBuffer.h" />
-    <ClInclude Include="src\Platform\Vulkan\Device.h" />
-    <ClInclude Include="src\Platform\Vulkan\FrameBuffer.h" />
-    <ClInclude Include="src\Platform\Vulkan\GraphicsPipeline.h" />
-    <ClInclude Include="src\Platform\Vulkan\Image.h" />
-    <ClInclude Include="src\Platform\Vulkan\ImageView.h" />
-    <ClInclude Include="src\Platform\Vulkan\Renderer.h" />
-    <ClInclude Include="src\Platform\Vulkan\Shader.h" />
-    <ClInclude Include="src\Platform\Vulkan\SwapChain.h" />
-    <ClInclude Include="src\Platform\Vulkan\Texture.h" />
-    <ClInclude Include="src\Platform\Vulkan\ValidationLayers.h" />
-    <ClInclude Include="src\Platform\Vulkan\Vertex.h" />
+    <ClInclude Include="src\Events\ApplicationEvent.h" />
+    <ClInclude Include="src\Events\Event.h" />
+    <ClInclude Include="src\Events\KeyEvent.h" />
+    <ClInclude Include="src\Events\MouseEvent.h" />
+    <ClInclude Include="src\Renderer\Mesh.h" />
+    <ClInclude Include="src\Renderer\Texture.h" />
+    <ClInclude Include="src\Renderer\VulkanRenderer.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\DataStructures.h" />
+    <ClInclude Include="src\Renderer\RenderObject.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VCommandBuffer.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VFrameBuffer.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VGraphicsPipeline.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VCommandPool.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VDevice.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VImage.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VInstance.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VRenderPass.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VShader.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VSurface.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VSwapChain.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VulkanHelperFunctions.h" />
+    <ClInclude Include="src\Renderer\VulkanWrapper\VulkanValidationLayers.h" />
+    <ClInclude Include="src\SPX\Camera.h" />
     <ClInclude Include="src\SPX\Core.h" />
     <ClInclude Include="src\SPX\Engine.h" />
+    <ClInclude Include="src\SPX\Layer.h" />
     <ClInclude Include="src\SPX\Log.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\SPX\Window.h" />
     <ClInclude Include="src\stb_image\stb_image.h" />
+    <ClInclude Include="src\ThirdParty\stb_image.h" />
+    <ClInclude Include="src\ThirdParty\tiny_obj_loader.h" />
+    <ClInclude Include="src\ThirdParty\vk_mem_alloc.h" />
     <ClInclude Include="src\tiny_obj_loader\tiny_obj_loader.h" />
   </ItemGroup>
   <ItemGroup>
