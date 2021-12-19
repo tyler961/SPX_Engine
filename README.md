@@ -12,4 +12,4 @@ This is also teaching me software architecture for a large project.
 After the current goal is met, I plan to add onto it and increasing its functionality beyond a Renderer wrapper.
 
 ### Preview
-![Preview](SPX_Engine/Media/Textures/SPXEnginePreview.png)
+![Preview](SPX_Engine/Media/Textures/SPXEnginePreview.PNG)
