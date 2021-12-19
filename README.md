@@ -15,3 +15,5 @@ Currently the wrapper can render two seperate models and apply textures (with li
 
 ### Preview
 ![Preview](SPX_Engine/Media/Images/SPXEnginePreview.PNG)
+
+In order to run the code, you will need to download and install the Vulkan SDK.
