@@ -11,5 +11,7 @@ This is also teaching me software architecture for a large project.
 
 After the current goal is met, I plan to add onto it and increasing its functionality beyond a Renderer wrapper.
 
+Currently the wrapper can render two seperate models and apply textures (with lighting baked in) to those models.
+
 ### Preview
 ![Preview](SPX_Engine/Media/Images/SPXEnginePreview.PNG)
