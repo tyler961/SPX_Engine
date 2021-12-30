@@ -6,17 +6,12 @@
 
 // Will add more to this as I develop the need for more information about the mesh.
 
-
 class VDevice;
 
-
-
-class Mesh
-{
+class Mesh {
 public:
 	Mesh(std::string fileLocation, VDevice& device, size_t numSwapChainImages);
 	~Mesh();
-
 
 	void createBuffers();
 	void createVertexBuffer();

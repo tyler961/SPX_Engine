@@ -1,10 +1,6 @@
 #include "Layer.h"
 
 Layer::Layer(const std::string& name)
-	:mDebugName(name)
-{
-}
+	:mDebugName(name) {}
 
-Layer::~Layer()
-{
-}
+Layer::~Layer() {}

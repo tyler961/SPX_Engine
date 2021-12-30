@@ -2,12 +2,9 @@
 
 #include "../../pch.h"
 
-// Does this really need to be a class??
-
 class VDevice;
 
-class VCommandBuffer
-{
+class VCommandBuffer {
 public:
 	VkCommandBuffer mCommandBuffer;
 

@@ -6,18 +6,14 @@
 #include "../../ThirdParty/vk_mem_alloc.h"
 
 
-namespace VHF
-{
-	struct VulkanHelperFunctions
-	{
+namespace VHF {
+	struct VulkanHelperFunctions {
 		static VkFormat findSupportedFormat(
 			const std::vector<VkFormat>& candidates,
 			VkImageTiling tiling,
 			VkFormatFeatureFlags features,
-			VkPhysicalDevice device)
-		{
-			for (VkFormat format : candidates)
-			{
+			VkPhysicalDevice device) {
+			for (VkFormat format : candidates) {
 				VkFormatProperties prop;
 				vkGetPhysicalDeviceFormatProperties(device, format, &prop);
 
@@ -30,8 +26,7 @@ namespace VHF
 			CORE_ERROR("Failed to find a supported format.");
 		}
 
-		static VkFormat findDepthFormat(VkPhysicalDevice device)
-		{
+		static VkFormat findDepthFormat(VkPhysicalDevice device) {
 			return findSupportedFormat(
 				{ VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT,
 				VK_FORMAT_D24_UNORM_S8_UINT },
@@ -41,8 +36,7 @@ namespace VHF
 			);
 		}
 
-		static AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VDevice device)
-		{
+		static AllocatedBuffer createBuffer(size_t allocSize, VkBufferUsageFlags usage, VmaMemoryUsage memoryUsage, VDevice device) {
 			VkBufferCreateInfo bufferInfo{};
 			bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 			bufferInfo.size = allocSize;
@@ -60,5 +54,4 @@ namespace VHF
 			return newBuffer;
 		}
 	};
-
 }

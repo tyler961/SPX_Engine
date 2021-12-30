@@ -9,8 +9,7 @@
 
 // TODO: Put namspaces around things so the client application knows what theyre using.
 
-class Layer
-{
+class Layer {
 public:
 	Layer(const std::string& name = "Layer");
 	virtual ~Layer();

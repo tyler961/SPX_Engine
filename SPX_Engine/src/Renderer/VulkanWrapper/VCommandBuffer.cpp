@@ -1,7 +1,6 @@
 #include "VCommandBuffer.h"
 
-VkCommandBuffer VCommandBuffer::beginSingleTimeCommands(VkCommandPool commandPool, VkDevice device)
-{
+VkCommandBuffer VCommandBuffer::beginSingleTimeCommands(VkCommandPool commandPool, VkDevice device) {
 	// Memory transfer operations are excuted using command buffers, just like drawing commands.
 	// MIGHT WANT TO CREATE A COMMAND POOL FOR TEMPORARY BUFFERS, because the implementation may be able
 	// to apply memory allocation optimizations. I should use VK_COMMAND_POOL_CREATE_TRANSIENT_BIT flag during command pool
@@ -24,8 +23,7 @@ VkCommandBuffer VCommandBuffer::beginSingleTimeCommands(VkCommandPool commandPoo
 	return commandBuffer;
 }
 
-void VCommandBuffer::endSingleTimeCommands(VkCommandPool commandPool, VkCommandBuffer& commandBuffer, VkQueue graphicsFamily, VkDevice device)
-{
+void VCommandBuffer::endSingleTimeCommands(VkCommandPool commandPool, VkCommandBuffer& commandBuffer, VkQueue graphicsFamily, VkDevice device) {
 	// Execute the command buffer to complete the transfer.
 	vkEndCommandBuffer(commandBuffer);
 

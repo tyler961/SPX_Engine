@@ -11,33 +11,28 @@
 // as static function checks
 
 // TODO: Add getters and make variables private
-
 // TODO: Add transfer queue for data to GPU
 
 class VInstance;
 
-struct QueueFamilyIndices
-{
+struct QueueFamilyIndices {
 	std::optional<uint32_t> graphicsFamily;
 	std::optional<uint32_t> presentFamily;
 	//std::optional<uint32_t> transferFamily;
 
-	bool isComplete()
-	{
+	bool isComplete() {
 		return graphicsFamily.has_value() && presentFamily.has_value(); //&& transferFamily.has_value();
 	}
 };
 
-struct SwapChainSupportDetails
-{
+struct SwapChainSupportDetails {
 	VkSurfaceCapabilitiesKHR capabilities;
 	std::vector<VkSurfaceFormatKHR> formats;
 	std::vector<VkPresentModeKHR> presentMode;
 };
 
 
-class VDevice
-{
+class VDevice {
 public:
 	VDevice(VkSurfaceKHR surface, VInstance instance);
 	
@@ -48,7 +43,6 @@ public:
 
 	static SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface);
 	static QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface);
-
 
 	VkPhysicalDevice mPhysicalDevice{ VK_NULL_HANDLE };
 	VkDevice mLogicalDevice{ VK_NULL_HANDLE };
@@ -61,7 +55,6 @@ public:
 
 	// List of required device extensions
 	const std::vector<const char*> mDeviceExtensions = { VK_KHR_SWAPCHAIN_EXTENSION_NAME };
-
 
 	// Vma Info
 	VmaAllocator mAllocator{ VK_NULL_HANDLE };

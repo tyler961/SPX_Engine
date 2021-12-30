@@ -2,7 +2,6 @@
 
 #include "../../pch.h"
 
-
 // ******************************************************************************************************************************
 //															SWAP CHAIN
 // The swap chain is essentially a queue of images that are waiting to be presented to the screen. The application will aquire
@@ -12,14 +11,12 @@
 
 #include "VFrameBuffer.h"
 
-
 class Window;
 class VImage;
 class VRenderPass;
 class VDevice;
 
-class VSwapChain
-{
+class VSwapChain {
 public:
 	VSwapChain(VDevice& device, Window* window);
 

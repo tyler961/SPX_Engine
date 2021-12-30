@@ -3,8 +3,7 @@
 #include "VSurface.h"
 
 VCommandPool::VCommandPool(VDevice& device, VSurface surface)
-	:mDevice(device)
-{
+	:mDevice(device) {
 	// Using VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT to allow for resetting of individual command buffers.
 	QueueFamilyIndices queueFamilyIndices = VDevice::findQueueFamilies(mDevice.mPhysicalDevice, surface.getSurface());
 
@@ -19,7 +18,6 @@ VCommandPool::VCommandPool(VDevice& device, VSurface surface)
 		CORE_INFO("Command Pool created Successfully.");
 }
 
-VCommandPool::~VCommandPool()
-{
+VCommandPool::~VCommandPool() {
 	//vkDestroyCommandPool(mDevice.mLogicalDevice, mCommandPool, nullptr);
 }

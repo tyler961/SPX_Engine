@@ -5,20 +5,18 @@
 
 
 VShader::VShader(ShaderType type, std::string file, VDevice& device)
-	:mType(type), mDevice(device)
-{
+	:mType(type), mDevice(device) {
 	readFile(file);
 	createShaderModule();
 }
 
-VShader::~VShader()
-{
+VShader::~VShader() {
 	//vkDestroyShaderModule(mDevice.mLogicalDevice, mShaderModule, nullptr);
 }
 
-void VShader::readFile(std::string fileName)
-{
-	// ate startes reading at the end. This is important so I can use read position to determine the file size and allocate a buffer
+void VShader::readFile(std::string fileName) {
+	// ate startes reading at the end. This is important so I can use read position to determine the
+	// file size and allocate a buffer
 	std::ifstream file(fileName, std::ios::ate | std::ios::binary);
 
 	if (!file.is_open())
@@ -38,11 +36,11 @@ void VShader::readFile(std::string fileName)
 	mShaderCode = buffer;
 }
 
-void VShader::createShaderModule()
-{
+void VShader::createShaderModule() {
 	VkShaderModuleCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 	createInfo.codeSize = mShaderCode.size();
+
 	// Have to cast because it is a char when I need uint32_t
 	createInfo.pCode = reinterpret_cast<const uint32_t*>(mShaderCode.data());
 

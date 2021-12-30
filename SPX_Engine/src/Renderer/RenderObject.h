@@ -17,15 +17,14 @@ class VCommandPool;
 
 // Find out when I would have to update my descriptor sets.
 
-class RenderObject
-{
+class RenderObject {
 public:
 	// Render Object is created just linking the file locations of the objects.
 	RenderObject(std::string meshLoc, std::string textureLoc);
 	~RenderObject();
 
 	void drawObject(VkCommandBuffer cmd, VkPipelineLayout pipelineLayout, uint32_t currentImage);
-	void updateUniformBuffers(VkExtent2D extent, uint32_t currentImage);
+	void updateUniformBuffers(VkExtent2D extent, uint32_t currentImage, glm::mat4 cameraViewMatrix);
 
 	// Loads buffers, textures and descriptors.
 	void init(VCommandPool commandPool, uint32_t swapchainImages);

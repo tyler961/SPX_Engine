@@ -6,16 +6,13 @@
 #include "VulkanWrapper/VCommandPool.h"
 
 RenderObject::RenderObject(std::string meshLoc, std::string textureLoc)
-	:mMeshFileLocation(meshLoc), mTextureFileLocation(textureLoc)
-{
+	:mMeshFileLocation(meshLoc), mTextureFileLocation(textureLoc) {
+	mTransformMatrix = glm::mat4(1.0f);
 }
 
-RenderObject::~RenderObject()
-{
-}
+RenderObject::~RenderObject() {}
 
-void RenderObject::drawObject(VkCommandBuffer cmd, VkPipelineLayout pipelineLayout, uint32_t currentImage)
-{
+void RenderObject::drawObject(VkCommandBuffer cmd, VkPipelineLayout pipelineLayout, uint32_t currentImage) {
 	// Here I would bind the pipeline that each object has
 	// vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, graphicsPipeline);
 	// Now to bind vertex buffers
@@ -32,20 +29,16 @@ void RenderObject::drawObject(VkCommandBuffer cmd, VkPipelineLayout pipelineLayo
 	vkCmdDrawIndexed(cmd, static_cast<uint32_t>(mMesh->mIndices.size()), 1, 0, 0, 0);
 }
 
-void RenderObject::updateUniformBuffers(VkExtent2D extent, uint32_t currentImage)
-{
+void RenderObject::updateUniformBuffers(VkExtent2D extent, uint32_t currentImage, glm::mat4 cameraViewMatrix) {
 	// Need to add position variables to the render object so it can be moved :D
 	UniformBufferObject ubo{};
 	// existing transform, rotation angle and rotation axis as prams
-	//ubo.model = glm::mat4(1.0f);
 	ubo.model = mTransformMatrix;
-	// Look at the geometry from above at 45 degree angle.
-	// eyepos, center pos, up axis are the params
-	ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+	ubo.view = cameraViewMatrix;
 	// Perspective projection with 45 degree vertial field of view.
 	// Next param is aspect ratio, near and far view planes.
 	// Important to use current swapchain extent incase the window is resized.
-	ubo.proj = glm::perspective(glm::radians(45.0f), extent.width / (float)extent.height, 0.1f, 10.0f);
+	ubo.proj = glm::perspective(glm::radians(45.0f), extent.width / (float)extent.height, 0.1f, 100.0f);
 	ubo.proj[1][1] *= -1;
 
 	// All transforms are defined now, so I can copy the data in the uniform buffer obj to the current uniform buffer.
@@ -56,9 +49,7 @@ void RenderObject::updateUniformBuffers(VkExtent2D extent, uint32_t currentImage
 	vmaUnmapMemory(mDevice->mAllocator, mMesh->mUniformBuffers[currentImage].mAlloc);
 }
 
-void RenderObject::init(VCommandPool commandPool, uint32_t swapchainImages)
-{
-	
+void RenderObject::init(VCommandPool commandPool, uint32_t swapchainImages) {
 	mTexture = new Texture(mTextureFileLocation, *mDevice);
 	mMesh = new Mesh(mMeshFileLocation, *mDevice, swapchainImages);
 	loadBuffers();
@@ -66,21 +57,18 @@ void RenderObject::init(VCommandPool commandPool, uint32_t swapchainImages)
 	loadDescriptorInfo(swapchainImages);
 }
 
-void RenderObject::loadBuffers()
-{
+void RenderObject::loadBuffers() {
 	mMesh->createBuffers();
 }
 
-void RenderObject::loadDescriptorInfo(uint32_t swapchainImages)
-{
+void RenderObject::loadDescriptorInfo(uint32_t swapchainImages) {
 	createDescriptorPool(swapchainImages);
 	createDescriptorSets(swapchainImages);
 }
 
 
 // This is used to allocated specific descriptorsets out and the types taht they are and their positions.
-void RenderObject::createDescriptorPool(uint32_t swapchainImages)
-{
+void RenderObject::createDescriptorPool(uint32_t swapchainImages) {
 	// Create the descriptor pool that the render object will use.
 	// Only need a size of two for now with a color texture and uniform buffer.
 	// Later when normal, reflection etc are added I'll increase the size.
@@ -103,8 +91,7 @@ void RenderObject::createDescriptorPool(uint32_t swapchainImages)
 }
 
 // This describes the types of descriptor sets I'll be using. They neeed to be bound in the same position as the pool has them.
-void RenderObject::createDescriptorSetLayout(VDevice& device)
-{
+void RenderObject::createDescriptorSetLayout(VDevice& device) {
 	// Need to find a better way to initialize the device since this has to be called before init is done.
 	mDevice = &device;
 
@@ -141,8 +128,7 @@ void RenderObject::createDescriptorSetLayout(VDevice& device)
 		CORE_ERROR("Failed to create descriptor layout.");
 }
 
-void RenderObject::createDescriptorSets(uint32_t swapchainImages)
-{
+void RenderObject::createDescriptorSets(uint32_t swapchainImages) {
 	// Create one descriptor set for each swap chain image all with the same layout.
 	std::vector<VkDescriptorSetLayout> layouts(swapchainImages, mDescriptorSetLayout);
 
@@ -158,8 +144,7 @@ void RenderObject::createDescriptorSets(uint32_t swapchainImages)
 		CORE_ERROR("Failed to allocate descriptor sets.");
 
 	// Now I use descriptor writes to actually record the data I want in each descriptor set.
-	for (size_t i = 0; i < swapchainImages; i++)
-	{
+	for (size_t i = 0; i < swapchainImages; i++) {
 		VkDescriptorBufferInfo bufferInfo{};
 		bufferInfo.buffer = mMesh->mUniformBuffers[i].mBuffer;
 		bufferInfo.offset = 0;
@@ -192,5 +177,3 @@ void RenderObject::createDescriptorSets(uint32_t swapchainImages)
 		vkUpdateDescriptorSets(mDevice->mLogicalDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 	}
 }
-
-

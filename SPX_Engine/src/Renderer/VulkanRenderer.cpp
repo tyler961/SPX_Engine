@@ -13,16 +13,11 @@
 
 
 VulkanRenderer::VulkanRenderer(Window* window)
-	:mWindow(window)
-{
-}
+	:mWindow(window) {}
 
-VulkanRenderer::~VulkanRenderer()
-{
-}
+VulkanRenderer::~VulkanRenderer() {}
 
-void VulkanRenderer::init(std::string appName, std::string engineName, bool enableValLayers)
-{
+void VulkanRenderer::init(std::string appName, std::string engineName, bool enableValLayers) {
 	// When a new model is loaded during runtime, I have to remake some stuff. Especially once I've changed descriptors and pipeline.
 	mInstance = new VInstance(appName, engineName, enableValLayers);
 	mSurface = new VSurface(mInstance->get(), mWindow);
@@ -32,59 +27,52 @@ void VulkanRenderer::init(std::string appName, std::string engineName, bool enab
 	mGraphicsPipeline = new VGraphicsPipeline("src/ShaderFiles/vert.spv", "src/ShaderFiles/frag.spv", *mDevice);
 	// This has to be called so the descriptor sets are created.
 	for (size_t i = 0; i < mRenderObjects.size(); i++)
-	{
 		mRenderObjects.at(i).createDescriptorSetLayout(*mDevice);
-	}
+
 	mGraphicsPipeline->createGraphicsPipeline(mSwapChain->mSwapChainExtent, mRenderObjects.at(0).mDescriptorSetLayout, mRenderPass->mRenderPass);
 	mCommandPool = new VCommandPool(*mDevice, *mSurface);
 	mSwapChain->createSwapChainFrameBuffers(*mRenderPass);
+
 	// Load the textures and render objects.
 	// Adds the load descriptor info to this function.
 	loadRenderObjects();
 	// Make sure I have a command buffer for each frame. This will allow me to work on one while the other is being processed by the GPU.
 	createCommandBuffers();
 	
-
-	// TEMP CODE TO POSITION THE OBJECTS A BIT
+	// This code is to set their intial model or local position.
 	glm::vec3 rotation1 = glm::vec3(0.0f, 0.0f, -1.0f);
 	glm::mat4 modelMatrix1 = glm::mat4(1.0f);
-	glm::mat4 currentTransform1 = glm::rotate(modelMatrix1, glm::radians(135.0f), rotation1);
+	glm::mat4 currentTransform1 = glm::rotate(modelMatrix1, glm::radians(90.0f), rotation1);
+	rotation1 = glm::vec3(0.0f, 1.0f, 0.0f);
+	currentTransform1 = glm::rotate(currentTransform1, glm::radians(90.0f), rotation1);
 	glm::vec3 move1 = glm::vec3(0.0f, -1.5f, 0.0f);
 	currentTransform1 = glm::translate(currentTransform1, move1);
 	mRenderObjects.at(0).mTransformMatrix = currentTransform1;
-	//mRenderObjects.at(0).mTransformMatrix = glm::translate(glm::mat4(), glm::vec3(-10.0f, 0.0f, -5.0f));
-
 
 	glm::vec3 scale = glm::vec3(0.05f, 0.05f, 0.05f);
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	glm::mat4 currentTransform = glm::scale(modelMatrix, scale);
 	glm::vec3 rotation = glm::vec3(1.0f, 0.0f, 0.0f);
-	currentTransform = glm::rotate(currentTransform, glm::radians(90.0f), rotation);
+	currentTransform = glm::rotate(currentTransform, glm::radians(180.0f), rotation);
 	rotation = glm::vec3(0.0f, 1.0f, 0.0f);
-	currentTransform = glm::rotate(currentTransform, glm::radians(90.0f), rotation);
-	glm::vec3 move = glm::vec3(0.0f, 0.0f, 10.0f);
+	currentTransform = glm::rotate(currentTransform, glm::radians(180.0f), rotation);
+	glm::vec3 move = glm::vec3(-30.0f, 5.0f, 10.0f);
 	currentTransform = glm::translate(currentTransform, move);
-
 	mRenderObjects.at(1).mTransformMatrix = currentTransform;
 
 	createSyncObjects();
 }
 
-void VulkanRenderer::addRenderObject(RenderObject& renderObj)
-{
+void VulkanRenderer::addRenderObject(RenderObject& renderObj) {
 	mRenderObjects.push_back(renderObj);
 }
 
-void VulkanRenderer::addRenderObjects(std::vector<RenderObject> renderObjs)
-{
-	for (size_t i = 0; i < renderObjs.size(); i++)
-	{
+void VulkanRenderer::addRenderObjects(std::vector<RenderObject> renderObjs) {
+	for (size_t i = 0; i < renderObjs.size(); i++) 
 		mRenderObjects.push_back(renderObjs.at(i));
-	}
 }
 
-void VulkanRenderer::draw()
-{
+void VulkanRenderer::draw(glm::mat4 cameraViewMatrix) {
 
 	// Wait to make sure the frame is finished. No timeout set for now.
 	vkWaitForFences(mDevice->mLogicalDevice, 1, &mInFlightFences[mCurrentFrame], VK_TRUE, std::numeric_limits<uint32_t>::max());
@@ -134,27 +122,15 @@ void VulkanRenderer::draw()
 	vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, mGraphicsPipeline->mGraphicsPipeline);
 
 	for (size_t i = 0; i < mRenderObjects.size(); i++)
-	{
 		mRenderObjects.at(i).drawObject(cmd, mGraphicsPipeline->mPipelineLayout, imageIndex);
-	}
 
 	vkCmdEndRenderPass(cmd);
 
 	vkEndCommandBuffer(cmd);
 
-	//// Now that the commands have all been recorded to the command buffer, I need to submit it.
-	//if (mImagesInFlight[imageIndex] != VK_NULL_HANDLE)
-	//{
-	//	vkWaitForFences(mDevice->mLogicalDevice, 1, &mImagesInFlight[imageIndex], VK_TRUE, UINT64_MAX);
-	//}
-
-	//mImagesInFlight[imageIndex] = mImagesInFlight[mCurrentFrame];
-
 	// Update the Uniform Buffers after receiving the current swapchain image.
 	for (size_t i = 0; i < mRenderObjects.size(); i++)
-	{
-		mRenderObjects.at(i).updateUniformBuffers(mSwapChain->mSwapChainExtent, imageIndex);
-	}
+		mRenderObjects.at(i).updateUniformBuffers(mSwapChain->mSwapChainExtent, imageIndex, cameraViewMatrix);
 
 	// Queue submission and synchonization is configured through parameters in the VkSubmitInfo struct
 	VkSubmitInfo submitInfo{};
@@ -204,26 +180,20 @@ void VulkanRenderer::draw()
 
 	result = vkQueuePresentKHR(mDevice->mPresentQueue, &presentInfo);
 
-	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || mFrameBufferResized)
-	{
+	if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR || mFrameBufferResized) {
 		mFrameBufferResized = false;
 		//recreateSwapChain();
 	}
 	else if (result != VK_SUCCESS)
-	{
 		CORE_ERROR("Failed to present swap chain image in draw frame.");
-	}
 
 	// Advance to the next frame
 	mCurrentFrame = (mCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-void VulkanRenderer::calculateMemoryBudget()
-{
-}
+void VulkanRenderer::calculateMemoryBudget() {}
 
-void VulkanRenderer::createSyncObjects()
-{
+void VulkanRenderer::createSyncObjects() {
 	// Resize to how many frames I want to be worked on at the end of drawFrame()
 	mImageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
 	mRenderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
@@ -241,18 +211,15 @@ void VulkanRenderer::createSyncObjects()
 
 	// Loop to build all the semaphores needed so each frame has it's own
 
-	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
-	{
+	for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
 		if (vkCreateSemaphore(mDevice->mLogicalDevice, &semaphoreInfo, nullptr, &mImageAvailableSemaphores[i]) != VK_SUCCESS ||
 			vkCreateSemaphore(mDevice->mLogicalDevice, &semaphoreInfo, nullptr, &mRenderFinishedSemaphores[i]) != VK_SUCCESS ||
 			vkCreateFence(mDevice->mLogicalDevice, &fenceInfo, nullptr, &mInFlightFences[i]) != VK_SUCCESS)
 			CORE_ERROR("Failed to create synchronization objects for a frame.");
 	}
-
 }
 
-void VulkanRenderer::createCommandBuffers()
-{
+void VulkanRenderer::createCommandBuffers() {
 	mMainCommandBuffers.resize(mSwapChain->mSwapChainImages.size());
 
 	VkCommandBufferAllocateInfo allocInfo{};
@@ -265,11 +232,8 @@ void VulkanRenderer::createCommandBuffers()
 		CORE_ERROR("Error: Failed to allocate main command buffers");
 }
 
-void VulkanRenderer::loadRenderObjects()
-{
+void VulkanRenderer::loadRenderObjects() {
 	for (size_t i = 0; i < mRenderObjects.size(); i++)
-	{
 		mRenderObjects.at(i).init(*mCommandPool, static_cast<uint32_t>(mSwapChain->mSwapChainImages.size()));
-	}
 }
 

@@ -8,8 +8,7 @@ enum class ShaderType { NONE, VERT_SHADER, FRAG_SHADER };
 
 class VDevice;
 
-class VShader
-{
+class VShader {
 public:
 	VShader(ShaderType type, std::string file, VDevice& device);
 	~VShader();

@@ -4,14 +4,12 @@
 #include "../../ThirdParty/vk_mem_alloc.h"
 
 VDevice::VDevice(VkSurfaceKHR surface, VInstance instance)
-	: mSurface(surface)
-{
+	: mSurface(surface) {
 	pickPhysicalDevice(instance);
 	createLogicalDevice(instance);
 }
 
-void VDevice::pickPhysicalDevice(VInstance instance)
-{
+void VDevice::pickPhysicalDevice(VInstance instance) {
 	// List all available GPUs
 	uint32_t deviceCount = 0;
 	vkEnumeratePhysicalDevices(instance.get(), &deviceCount, nullptr);
@@ -27,15 +25,13 @@ void VDevice::pickPhysicalDevice(VInstance instance)
 	// If none are found:
 	if (mPhysicalDevice == VK_NULL_HANDLE)
 		CORE_ERROR("Failed to find a suitable GPU");
-	else
-	{
+	else {
 		CORE_INFO("GPU selected successfully.");
 		printPhysicalDeviceName();
 	}
 }
 
-void VDevice::createLogicalDevice(VInstance instance)
-{
+void VDevice::createLogicalDevice(VInstance instance) {
 	QueueFamilyIndices indices = findQueueFamilies(mPhysicalDevice, mSurface);
 
 	std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -45,8 +41,7 @@ void VDevice::createLogicalDevice(VInstance instance)
 
 	// Need to have multiple VkDeviceQueueCreateInfos structs to create a queue from both families.
 	// Elegant way to do that is to create a set of all the unique queue families that are necessary for the required queues.
-	for (uint32_t queueFamily : uniqueQueueFamilies)
-	{
+	for (uint32_t queueFamily : uniqueQueueFamilies) {
 		VkDeviceQueueCreateInfo queueCreateInfo{};
 		queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueCreateInfo.queueFamilyIndex = queueFamily;
@@ -69,8 +64,7 @@ void VDevice::createLogicalDevice(VInstance instance)
 	createInfo.enabledExtensionCount = static_cast<uint32_t>(mDeviceExtensions.size());
 	createInfo.ppEnabledExtensionNames = mDeviceExtensions.data();
 
-	if (instance.mValLayers->mEnableValidationLayers)
-	{
+	if (instance.mValLayers->mEnableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(instance.mValLayers->mValidationLayers.size());
 		createInfo.ppEnabledLayerNames = instance.mValLayers->mValidationLayers.data();
 	}
@@ -101,18 +95,15 @@ void VDevice::createLogicalDevice(VInstance instance)
 		CORE_ERROR("Error: vmaCreateAllocator failed.");
 }
 
-void VDevice::printPhysicalDeviceName()
-{
-	if (mPhysicalDevice != VK_NULL_HANDLE)
-	{
+void VDevice::printPhysicalDeviceName() {
+	if (mPhysicalDevice != VK_NULL_HANDLE) {
 		VkPhysicalDeviceProperties props{};
 		vkGetPhysicalDeviceProperties(mPhysicalDevice, &props);
 		CORE_TRACE("Selected GPU: {}", props.deviceName);
 	}
 }
 
-SwapChainSupportDetails VDevice::querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface)
-{
+SwapChainSupportDetails VDevice::querySwapChainSupport(VkPhysicalDevice device, VkSurfaceKHR surface) {
 	SwapChainSupportDetails details;
 
 	vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
@@ -120,8 +111,7 @@ SwapChainSupportDetails VDevice::querySwapChainSupport(VkPhysicalDevice device, 
 	uint32_t formatCount;
 	vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
 
-	if (formatCount != 0)
-	{
+	if (formatCount != 0) {
 		details.formats.resize(formatCount);
 		vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
 	}
@@ -129,8 +119,7 @@ SwapChainSupportDetails VDevice::querySwapChainSupport(VkPhysicalDevice device, 
 	uint32_t presentModeCount;
 	vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
 
-	if (presentModeCount != 0)
-	{
+	if (presentModeCount != 0) {
 		details.presentMode.resize(presentModeCount);
 		vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, details.presentMode.data());
 	}
@@ -138,9 +127,9 @@ SwapChainSupportDetails VDevice::querySwapChainSupport(VkPhysicalDevice device, 
 	return details;
 }
 
-QueueFamilyIndices VDevice::findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface)
-{
+QueueFamilyIndices VDevice::findQueueFamilies(VkPhysicalDevice device, VkSurfaceKHR surface) {
 	QueueFamilyIndices indices;
+
 	// Gets queue family info supported by the device
 	uint32_t queueFamilyCount = 0;
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
@@ -149,8 +138,7 @@ QueueFamilyIndices VDevice::findQueueFamilies(VkPhysicalDevice device, VkSurface
 	vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
 	int i = 0;
-	for (const auto& queueFamily : queueFamilies)
-	{
+	for (const auto& queueFamily : queueFamilies) {
 		if (queueFamily.queueFlags & VK_QUEUE_GRAPHICS_BIT)
 			indices.graphicsFamily = i;
 
@@ -159,7 +147,6 @@ QueueFamilyIndices VDevice::findQueueFamilies(VkPhysicalDevice device, VkSurface
 
 		if (presentSupport)
 			indices.presentFamily = i;
-
 
 		if (indices.isComplete())
 			break;
@@ -170,22 +157,18 @@ QueueFamilyIndices VDevice::findQueueFamilies(VkPhysicalDevice device, VkSurface
 	return indices;
 }
 
-VkPhysicalDevice VDevice::pickBestPhysicalDevice(std::vector<VkPhysicalDevice> devices)
-{
+VkPhysicalDevice VDevice::pickBestPhysicalDevice(std::vector<VkPhysicalDevice> devices) {
 	VkPhysicalDevice selectedDevice;
 
 	std::multimap<int, VkPhysicalDevice> candidates;
-	for (const auto& device : devices)
-	{
+	for (const auto& device : devices) {
 		int score = rateDeviceSuitability(device);
 		candidates.insert(std::make_pair(score, device));
 	}
+
 	if (candidates.rbegin()->first > 0)
-	{
 		selectedDevice = candidates.rbegin()->second;
-	}
-	else
-	{
+	else {
 		CORE_ERROR("Failed to find a suitable GPU.");
 		selectedDevice = VK_NULL_HANDLE;
 	}
@@ -193,8 +176,7 @@ VkPhysicalDevice VDevice::pickBestPhysicalDevice(std::vector<VkPhysicalDevice> d
 	return selectedDevice;
 }
 
-int VDevice::rateDeviceSuitability(VkPhysicalDevice device)
-{
+int VDevice::rateDeviceSuitability(VkPhysicalDevice device) {
 	int score = 0;
 
 	// Discrete GPUs have a significant advantage
@@ -217,16 +199,14 @@ int VDevice::rateDeviceSuitability(VkPhysicalDevice device)
 	return score;
 }
 
-bool VDevice::isDeviceSuitable(VkPhysicalDevice device)
-{
+bool VDevice::isDeviceSuitable(VkPhysicalDevice device) { 
 	// Once a device has been selected, make sure it supports the required queue families.
 	QueueFamilyIndices indices = findQueueFamilies(device, mSurface);
 
 	bool extensionsSupported = checkDeviceExtensionSupport(device);
 
 	bool swapChainAdequate = false;
-	if (extensionsSupported)
-	{
+	if (extensionsSupported) {
 		SwapChainSupportDetails swapChainSupport = querySwapChainSupport(device, mSurface);
 		swapChainAdequate = !swapChainSupport.formats.empty() && !swapChainSupport.presentMode.empty();
 	}
@@ -238,8 +218,7 @@ bool VDevice::isDeviceSuitable(VkPhysicalDevice device)
 	return indices.isComplete() && extensionsSupported && swapChainAdequate && supportedFeatures.samplerAnisotropy;
 }
 
-bool VDevice::checkDeviceExtensionSupport(VkPhysicalDevice device)
-{
+bool VDevice::checkDeviceExtensionSupport(VkPhysicalDevice device) {
 	uint32_t extensionCount;
 	vkEnumerateDeviceExtensionProperties(device, nullptr, &extensionCount, nullptr);
 

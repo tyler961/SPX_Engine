@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include "../../pch.h"
 
 class Window;
@@ -11,9 +10,7 @@ public:
 	VSurface(VkInstance instance, Window* window);
 	~VSurface();
 
-
 	VkSurfaceKHR getSurface() const { return mSurface; }
-
 
 private:
 	VkInstance mInstance{ VK_NULL_HANDLE };

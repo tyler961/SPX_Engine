@@ -12,8 +12,7 @@ VImage::VImage(
 	VkSampleCountFlagBits sampleCount, 
 	const std::string& name, 
 	VkExtent2D imageExtent)
-	: mDevice(device), mFormat(format), mName(name)
-{
+	: mDevice(device), mFormat(format), mName(name) {
 	VkImageCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
 	createInfo.imageType = VK_IMAGE_TYPE_2D;
@@ -26,6 +25,7 @@ VImage::VImage(
 	createInfo.tiling = VK_IMAGE_TILING_OPTIMAL;
 	createInfo.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
 	createInfo.usage = imageUsage;
+
 	// This is for MSAA/multisampling.
 	createInfo.samples = sampleCount;
 	createInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -39,8 +39,6 @@ VImage::VImage(
 
 	if (vmaCreateImage(mDevice.mAllocator, &createInfo, &VmaAlloc, &mImage, &mAllocation, &mAllocationInfo) != VK_SUCCESS)
 		CORE_ERROR("ERROR: vmaCreateImage failed for image {}.", mName);
-
-
 
 	// Now create ImageView for this image.
 	VkImageViewCreateInfo createViewInfo{};
@@ -58,8 +56,7 @@ VImage::VImage(
 		CORE_ERROR("Error: vkCreateImageView failed for image view {}.", mName);
 }
 
-VImage::~VImage()
-{
-	//vkDestroyImageView(mDevice.mLogicalDevice, mImageView, nullptr);
-	//vmaDestroyImage(mDevice.mAllocator, mImage, mAllocation);
+VImage::~VImage() {
+	vkDestroyImageView(mDevice.mLogicalDevice, mImageView, nullptr);
+	vmaDestroyImage(mDevice.mAllocator, mImage, mAllocation);
 }

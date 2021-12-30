@@ -8,8 +8,7 @@
 #include <GLFW/glfw3.h>
 
 VSwapChain::VSwapChain(VDevice& device, Window* window)
-	: mDevice(device)
-{
+	: mDevice(device) {
 	SwapChainSupportDetails swapChainSupport = VDevice::querySwapChainSupport(device.mPhysicalDevice, device.mSurface);
 
 	VkSurfaceFormatKHR surfaceFormat = chooseSwapSurfaceFormat(swapChainSupport.formats);
@@ -45,23 +44,21 @@ VSwapChain::VSwapChain(VDevice& device, Window* window)
 	createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 	// Next I need to specify how to handle swap chain images that will be used across multiple queue families.
-		// That will be the case in our application if the graphics queue family is different from the presentation queue.
-		// I'll be drawing on the images in the swap chain from the graphics queue and then submitting them on the presentation queue.
-		// There are two ways to handle images that are accessed from different queues:
-		// VK_SHARING_MODE_EXCLUISIVE: An image is owned by one queue family at a time and ownership must be explicitly
-		// transfered before using it in another queu family. THIS OPTION OFFERS THE BEST PREFORMANCE
-		// VK_SHARING_MODE_CONCURRENT: Images can be used across multiple queue families without explict ownership transfers.
+	// That will be the case in our application if the graphics queue family is different from the presentation queue.
+	// I'll be drawing on the images in the swap chain from the graphics queue and then submitting them on the presentation queue.
+	// There are two ways to handle images that are accessed from different queues:
+	// VK_SHARING_MODE_EXCLUISIVE: An image is owned by one queue family at a time and ownership must be explicitly
+	// transfered before using it in another queu family. THIS OPTION OFFERS THE BEST PREFORMANCE
+	// VK_SHARING_MODE_CONCURRENT: Images can be used across multiple queue families without explict ownership transfers.
 	QueueFamilyIndices indices = VDevice::findQueueFamilies(device.mPhysicalDevice, device.mSurface);
 	uint32_t queueFamilyIndices[] = { indices.graphicsFamily.value(), indices.presentFamily.value() };
 
-	if (indices.graphicsFamily != indices.presentFamily)
-	{
+	if (indices.graphicsFamily != indices.presentFamily) {
 		createInfo.imageSharingMode = VK_SHARING_MODE_CONCURRENT;
 		createInfo.queueFamilyIndexCount = 2;
 		createInfo.pQueueFamilyIndices = queueFamilyIndices;
 	}
-	else
-	{
+	else {
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
 		createInfo.queueFamilyIndexCount = 0; // Optional
 		createInfo.pQueueFamilyIndices = nullptr; // Optional
@@ -93,7 +90,6 @@ VSwapChain::VSwapChain(VDevice& device, Window* window)
 	// and a reference to the old one must be specified in this field.
 	createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-
 	// Parameters are logical device, swapchain creation info, optional custom allocator, and a pointer to the variable to store the handle in
 	if (vkCreateSwapchainKHR(device.mLogicalDevice, &createInfo, nullptr, &mSwapChain) != VK_SUCCESS)
 		CORE_ERROR("ERROR: Failed to create swap chain!");
@@ -123,8 +119,7 @@ VSwapChain::VSwapChain(VDevice& device, Window* window)
 	
 	mSwapChainImageViews.resize(mSwapChainImageCount);
 
-	for (uint32_t i = 0; i < mSwapChainImageCount; i++)
-	{
+	for (uint32_t i = 0; i < mSwapChainImageCount; i++) {
 		imageViewCreateInfo.image = mSwapChainImages.at(i);
 
 		if (vkCreateImageView(device.mLogicalDevice, &imageViewCreateInfo, nullptr, &mSwapChainImageViews.at(i)) != VK_SUCCESS)
@@ -132,22 +127,18 @@ VSwapChain::VSwapChain(VDevice& device, Window* window)
 	}
 }
 
-
-void VSwapChain::createSwapChainFrameBuffers(VRenderPass renderPass)
-{
+void VSwapChain::createSwapChainFrameBuffers(VRenderPass renderPass) {
 	createDepthResources();
 
 	mSwapChainFrameBuffers.resize(mSwapChainImageViews.size());
 
-	for (size_t i = 0; i < mSwapChainImageViews.size(); i++)
-	{
+	for (size_t i = 0; i < mSwapChainImageViews.size(); i++) {
 		VFrameBuffer* tmp = new VFrameBuffer(*this, renderPass, mDevice, static_cast<uint32_t>(i));
 		mSwapChainFrameBuffers.at(i) = tmp;
 	}
 }
 
-void VSwapChain::createDepthResources()
-{
+void VSwapChain::createDepthResources() {
 	VkFormat depthFormat = VHF::VulkanHelperFunctions::findDepthFormat(mDevice.mPhysicalDevice);
 
 	mDepthImage = new VImage(mDevice, depthFormat, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, 
@@ -155,10 +146,8 @@ void VSwapChain::createDepthResources()
 }
 
 
-VkSurfaceFormatKHR VSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats)
-{
-	for (const auto& availableFormat : availableFormats)
-	{
+VkSurfaceFormatKHR VSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& availableFormats) {
+	for (const auto& availableFormat : availableFormats) {
 		// Checks if format and color space are correct. This is the preferred format and colorspace
 		if (availableFormat.format == VK_FORMAT_B8G8R8A8_UNORM && availableFormat.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
 			return availableFormat;
@@ -168,10 +157,8 @@ VkSurfaceFormatKHR VSwapChain::chooseSwapSurfaceFormat(const std::vector<VkSurfa
 }
 
 
-VkPresentModeKHR VSwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes)
-{
-	for (const auto& availablePresentMode : availablePresentModes)
-	{
+VkPresentModeKHR VSwapChain::chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes) {
+	for (const auto& availablePresentMode : availablePresentModes) {
 		// This checks for the preferred method which is triple buffering queue of images to be presented.
 		if (availablePresentMode == VK_PRESENT_MODE_MAILBOX_KHR)
 			return availablePresentMode;
@@ -189,13 +176,11 @@ VkPresentModeKHR VSwapChain::chooseSwapPresentMode(const std::vector<VkPresentMo
 
 // The swapchain extent is the resolution of the swap chain image
 // It is almost exactly the resolution of the window that is being drawn to.
-VkExtent2D VSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap, Window* window)
-{
+VkExtent2D VSwapChain::chooseSwapExtent(const VkSurfaceCapabilitiesKHR& cap, Window* window) {
 	if (cap.currentExtent.width != UINT64_MAX)
 		return cap.currentExtent;
 
-	else
-	{
+	else {
 		int width, height;
 		glfwGetFramebufferSize(window->getContext(), &width, &height);
 

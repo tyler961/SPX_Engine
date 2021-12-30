@@ -10,14 +10,10 @@
 #include "VulkanWrapper/VImage.h"
 
 Texture::Texture(std::string texturePath, VDevice& device)
-	:mDevice(device), mFileLocation(texturePath)
-{
-	
-}
+	:mDevice(device), mFileLocation(texturePath) {}
 
 
-void Texture::init(VCommandPool commandPool)
-{
+void Texture::init(VCommandPool commandPool) {
 	int texWidth, texHeight, texChannels;
 	stbi_uc* pixels = stbi_load(mFileLocation.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
 
@@ -104,8 +100,7 @@ void Texture::init(VCommandPool commandPool)
 	createTextureSampler();
 }
 
-void Texture::createTextureSampler()
-{
+void Texture::createTextureSampler() {
 	VkPhysicalDeviceProperties props{};
 	vkGetPhysicalDeviceProperties(mDevice.mPhysicalDevice, &props);
 

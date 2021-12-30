@@ -1,12 +1,10 @@
 #pragma once
 
-
 // This class will have all of the wrapper class and create it all based on the information sent to it by the engine class
 // Basically the interface between the engine and vulkan. The engine should never have to interact with anything other than the renderer
 // for Vulkan.
 
 // Renderer will also handle all the draw commands via classes the Engine sends to it, such as a model, light, etc.
-
 
 // TODO: For now the semaphores and fences are hardcoded into the Renderer. Later change this to better allow for multithreading.
 
@@ -26,8 +24,7 @@ class VRenderPass;
 class VGraphicsPipeline;
 
 
-class VulkanRenderer
-{
+class VulkanRenderer {
 public:
 	VulkanRenderer(Window* window);
 	~VulkanRenderer();
@@ -37,7 +34,7 @@ public:
 	void addRenderObject(RenderObject& renderObj);
 	void addRenderObjects(std::vector<RenderObject> renderObjs);
 
-	void draw();
+	void draw(glm::mat4 cameraViewMatrix);
 
 	// Run VMA memory stats
 	void calculateMemoryBudget();
@@ -81,7 +78,6 @@ private:
 	VkDescriptorSetLayout mDescriptorSetLayout;
 	VkDescriptorPool mDescriptorPool;
 	std::vector<VkDescriptorSet> mDescriptorSets;
-
 
 	// RenderGraph?
 };

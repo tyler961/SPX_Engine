@@ -10,8 +10,7 @@ VRenderPass::VRenderPass(
    // VkSubpassDescription subpassDescription, 
     const std::string& name,
 	VSwapChain swapChain) // Remove swapchain variable once I sent the attachments and dependencies and subpass.
-    : mDevice(device), mName(name)
-{
+    : mDevice(device), mName(name) {
 	// This is to tell Vulkan about the framebuffer attachments that I will be using during rendering. I need
 	// to specify how many color and depth buffers there will be, how many samples to use for each of them and how
 	// their contents should be handled throughout the rendering operations. All of this info is wrapped in a render
@@ -61,6 +60,7 @@ VRenderPass::VRenderPass(
 	// Learn more about subasses.
 	VkSubpassDescription subpass{};
 	subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS; // Need to specifiy Graphics over Compute.
+
 	// The index of the attachment in this array DIRECTLY REFERENCES the fragment shader with layout(location = 0) out vec4 outColor.
 	// These other types of attachements can also be referenced.
 	// pInputAttachments: Attachments that are read from a shader
@@ -96,29 +96,9 @@ VRenderPass::VRenderPass(
 		CORE_ERROR("Failed to create a render pass.");
 	else
 		CORE_INFO("Render pass created successfully.");
-
-
-
-    // USED ONCE I'M NO LONGER HARDCODING THE VARIABLES BEING PASSED HERE.
-    /*VkRenderPassCreateInfo createInfo{};
-    createInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-    createInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
-    createInfo.pAttachments = attachments.data();
-    createInfo.subpassCount = 1;
-    createInfo.pSubpasses = &subpassDescription;
-    createInfo.dependencyCount = static_cast<uint32_t>(dependencies.size());
-    createInfo.pDependencies = dependencies.data();
-
-    CORE_TRACE("Creating renderpass {}.", name);
-
-    if (vkCreateRenderPass(mDevice.mLogicalDevice, &createInfo, nullptr, &mRenderPass) != VK_SUCCESS)
-        CORE_ERROR("Error: vkCreateRenderPass failed for {}.", mName);
-
-    CORE_TRACE("Created renderpass successfully.");*/
 }
 
-VRenderPass::~VRenderPass()
-{
+VRenderPass::~VRenderPass() {
 	//vkDestroyRenderPass(mDevice.mLogicalDevice, mRenderPass, nullptr);
 }
 

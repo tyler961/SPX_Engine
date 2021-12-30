@@ -32,54 +32,23 @@ enum EventCategory
 // If it doesnt have the flag:			bool hasFlag = combinedFlags & EventCategoryKeyboard; (WILL BE FALSE)
 
 
-#define EVENT_CLASS_TYPE(type)  static EventType GetStaticType() { return EventType::##type; }\
-								virtual EventType getType() const override { return GetStaticType(); }\
-								virtual const char* getName() const override { return #type; }
-
-#define EVENT_CLASS_CATEGORY(category) virtual int getCategory() const override { return category; }\
-
-
-class Event
-{
-	friend class EventDispatcher;
+// Basic event structure for now. Can expand later. For now it is just a wrapper for GLFW information.
+class Event {
 public:
-	bool mIsHandled = false;
+	Event(int keycode, EventType type, int category)
+		: mKeycode(keycode), mType(type), mCategory(category), mIsHandled(false) {};
 
-	virtual int getCategory() const = 0;
-	virtual EventType getType() const = 0;
-	virtual const char* getName() const = 0;
-	virtual std::string ToString() const { return getName(); }
+	int getKeycode() { return mKeycode; }
+	EventType getType() { return mType; }
+	int getCategory() { return mCategory; }
+	bool getIsHandled() { return mIsHandled; }
 
-	inline bool isInCategory(EventCategory category)
-	{
-		return getCategory() & category;
-	}
-};
+	// Setter
+	void setIsHandled(bool handled) { mIsHandled = handled; }
 
-class EventDispatcher
-{
-	template<typename T>
-	using EventFn = std::function<bool(T&)>;
-public:
-	EventDispatcher(Event& event)
-		:mEvent(event)
-	{}
-
-	template<typename T>
-	bool Dispatch(EventFn<T> func)
-	{
-		if (mEvent.getType() == T::GetStaticType())
-		{
-			mEvent.mIsHandled = func(*(T*) &mEvent);
-			return true;
-		}
-		return false;
-	}
 private:
-	Event& mEvent;
+	int mKeycode;
+	EventType mType;
+	int mCategory;
+	bool mIsHandled;
 };
-
-inline std::ostream& operator<<(std::ostream& os, const Event& e)
-{
-	return os << e.ToString();
-}

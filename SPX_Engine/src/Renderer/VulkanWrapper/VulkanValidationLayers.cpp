@@ -1,39 +1,28 @@
 #include "VulkanValidationLayers.h"
 
 VulkanValidationLayers::VulkanValidationLayers(bool enable)
-	:mEnableValidationLayers(enable)
-{
-}
+	:mEnableValidationLayers(enable) {}
 
-VulkanValidationLayers::~VulkanValidationLayers()
-{
-
-}
+VulkanValidationLayers::~VulkanValidationLayers() {}
 
 
-bool VulkanValidationLayers::checkValidationLayerSupport()
-{
+bool VulkanValidationLayers::checkValidationLayerSupport() {
 	uint32_t layerCount;
 	vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
 
 	std::vector<VkLayerProperties> availableLayers(layerCount);
 	vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
 
-	for (const char* layerName : mValidationLayers)
-	{
+	for (const char* layerName : mValidationLayers) {
 		bool layerFound = false;
-
-		for (const auto& layerProperties : availableLayers)
-		{
-			if (strcmp(layerName, layerProperties.layerName) == 0)
-			{
+		for (const auto& layerProperties : availableLayers) {
+			if (strcmp(layerName, layerProperties.layerName) == 0) {
 				layerFound = true;
 				break;
 			}
 		}
 
-		if (!layerFound)
-		{
+		if (!layerFound) {
 			return false;
 		}
 	}
@@ -42,8 +31,7 @@ bool VulkanValidationLayers::checkValidationLayerSupport()
 }
 
 
-void VulkanValidationLayers::init(VkInstance instance)
-{
+void VulkanValidationLayers::init(VkInstance instance) {
 	if (!mEnableValidationLayers) return;
 
 	VkDebugUtilsMessengerCreateInfoEXT info;
@@ -60,16 +48,13 @@ VkResult VulkanValidationLayers::CreateDebugUtilsMessengerEXT(
 	VkInstance instance, 
 	const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, 
 	const VkAllocationCallbacks* pAllocator, 
-	VkDebugUtilsMessengerEXT* pDebugMessenger)
-{
+	VkDebugUtilsMessengerEXT* pDebugMessenger) {
 	auto func = (PFN_vkCreateDebugUtilsMessengerEXT)
 		vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
-	if (func != nullptr)
-	{
+	if (func != nullptr) {
 		return func(instance, pCreateInfo, pAllocator, pDebugMessenger);
 	}
-	else
-	{
+	else {
 		return VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 }
@@ -78,8 +63,7 @@ VkResult VulkanValidationLayers::CreateDebugUtilsMessengerEXT(
 void VulkanValidationLayers::DestroyDebugUtilsMessengerEXT(
 	VkInstance instance, 
 	VkDebugUtilsMessengerEXT debugMessenger, 
-	const VkAllocationCallbacks* pAllocator)
-{
+	const VkAllocationCallbacks* pAllocator) {
 	auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)
 		vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
 
@@ -88,8 +72,7 @@ void VulkanValidationLayers::DestroyDebugUtilsMessengerEXT(
 }
 
 
-void VulkanValidationLayers::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& info)
-{
+void VulkanValidationLayers::populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& info) {
 	// Creates the debug create info struct
 	info = {};
 	info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
@@ -112,26 +95,22 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanValidationLayers::debugCallback(
 	VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
 	VkDebugUtilsMessageTypeFlagsEXT messageType,
 	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, 
-	void* pUserData)
-{
-	if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-	{
+	void* pUserData) {
+	if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
 		std::cout << std::endl;
 		CORE_WARN("----------------------------------------------START----------------------------------------------");
 		CORE_WARN(pCallbackData->pMessage);
 		CORE_WARN("-----------------------------------------------END-----------------------------------------------");
 		std::cout << std::endl;
 	}
-	else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-	{
+	else if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) {
 		std::cout << std::endl;
 		CORE_ERROR("----------------------------------------------START----------------------------------------------");
 		CORE_ERROR(pCallbackData->pMessage);
 		CORE_ERROR("-----------------------------------------------END-----------------------------------------------");
 		std::cout << std::endl;
 	}
-	else
-	{
+	else {
 		std::cout << std::endl;
 		CORE_INFO("----------------------------------------------START----------------------------------------------");
 		CORE_INFO(pCallbackData->pMessage);

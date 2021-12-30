@@ -6,8 +6,7 @@
 
 
 VInstance::VInstance(std::string& appName, std::string& engineName, bool enableValidationLayers)
-	:mValLayers(new VulkanValidationLayers(enableValidationLayers))
-{
+	:mValLayers(new VulkanValidationLayers(enableValidationLayers)) {
 	if (enableValidationLayers && !mValLayers->checkValidationLayerSupport())
 		CORE_ERROR("ERROR: Validation layers requested, but they are not supported.");
 
@@ -38,29 +37,24 @@ VInstance::VInstance(std::string& appName, std::string& engineName, bool enableV
 
 	// Doing this here lets validation layers to be used during VkCreateInstance and VkDestroyInstance
 	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-	if (enableValidationLayers)
-	{
+	if (enableValidationLayers) {
 		createInfo.enabledLayerCount = static_cast<uint32_t>(mValLayers->mValidationLayers.size());
 		createInfo.ppEnabledLayerNames = mValLayers->mValidationLayers.data();
 
 		mValLayers->populateDebugMessengerCreateInfo(debugCreateInfo);
 		createInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*)&debugCreateInfo;
 	}
-	else
-	{
+	else {
 		createInfo.enabledLayerCount = 0;
 		createInfo.pNext = nullptr;
 	}
 
 	if (vkCreateInstance(&createInfo, nullptr, &mInstance) != VK_SUCCESS)
 		CORE_ERROR("Failed to create Vulkan Instance.");
-	else
-	{
+	else {
 		CORE_INFO("Vulkan Instance created successfully.");
 		mValLayers->init(mInstance);
 	}
 }
 
-VInstance::~VInstance()
-{
-}
+VInstance::~VInstance(){}

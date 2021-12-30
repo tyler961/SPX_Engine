@@ -3,8 +3,7 @@
 #include "../../pch.h"
 #include "../../ThirdParty/vk_mem_alloc.h"
 
-struct AllocatedBuffer
-{
+struct AllocatedBuffer {
 	VkBuffer mBuffer{ VK_NULL_HANDLE };
 	VmaAllocation mAlloc{ VK_NULL_HANDLE };
 };
@@ -15,8 +14,7 @@ struct Vertex {
 	glm::vec3 color;
 	glm::vec2 texCoord;
 
-	static VkVertexInputBindingDescription getBindingDescription()
-	{
+	static VkVertexInputBindingDescription getBindingDescription() {
 		// Vertex binding describes at which rate to load data from memory throughout the vertices.
 		// Specifies the number of bytes between data entires and whether ot move to the net data entry after each vertex or instance
 		VkVertexInputBindingDescription bindingDescription{};
@@ -36,8 +34,7 @@ struct Vertex {
 
 	// This describes how to extract a vertex attribute from a chunk of vertex data from a binding description.
 	// I have two attributes, position and color, so I need two attribute description structs.
-	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions()
-	{
+	static std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions() {
 		std::array<VkVertexInputAttributeDescription, 3> attributeDescriptions{};
 		// Binding tells Vulkan from which binding the per-vertex data comes.
 		// Location references the location directive of the input in the vertex shader
@@ -67,26 +64,38 @@ struct Vertex {
 		return attributeDescriptions;
 	}
 
-	bool operator==(const Vertex& other) const
-	{
+	bool operator==(const Vertex& other) const {
 		return pos == other.pos && color == other.color && texCoord == other.texCoord;
 	}
 };
 
 // Uniform Buffer Object. Explained more on page 180
-struct UniformBufferObject
-{
+// Vertexs are transformed by the model matrix, then a view matrix and then a projection matrix.
+// 
+// Model:		Is composed from an object's translation transform, rotation transform and scale transform. (M = T * R * S)
+//				Basically the physical location within the world.
+// 
+// View:		A camera also has a model matrix to represent it's location within the world. The inverse of the camera's model matrix
+//				is the VIEW MATRIX and it transforms vertices from world space into camera space or VIEW SPACE. Each object has it's own
+//				model matrix, a view matrix is shared by all objects in the scene since they are all rendered from the same camera.
+//				Given a camera's model matrix C, any vector v can be transformed from model space, to world space, to camera space
+//				V = C^-1. v(camera) = V * M * v(model).
+// 
+// Projection:  Once objects are in camera space, they can be transformed into CLIP SPACE by applying a projection transformation.
+//			    The projection matrix encodes how much of the scene is captured in a render by defining the extents of the camera's view
+//			    Two types of projection are PERSPECTIVE and OTHOGRAPHIC.
+//			    PERSPECTIVE: results in the natural effect of things appearing smaller the further away they are from the viewer.
+//			    ORTHOGRAPHIC: Do not have that feature.
+//			    After the projection matrix has been applied the scene's vertices are now in clip space. 
+struct UniformBufferObject {
 	glm::mat4 model;
 	glm::mat4 view;
 	glm::mat4 proj;
 };
 
-namespace std
-{
-	template<> struct hash<Vertex>
-	{
-		size_t operator()(Vertex const& vertex) const
-		{
+namespace std {
+	template<> struct hash<Vertex> {
+		size_t operator()(Vertex const& vertex) const {
 			return ((hash<glm::vec3>()(vertex.pos) ^ (hash<glm::vec3>()(vertex.color) << 1)) >> 1) ^ (hash<glm::vec2>()(vertex.texCoord) << 1);
 		}
 	};

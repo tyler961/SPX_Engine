@@ -5,8 +5,7 @@
 #include "VulkanWrapper/VDevice.h"
 
 Mesh::Mesh(std::string fileLocation, VDevice& device, size_t numSwapChainImages)
-	:mDevice(device), mNumSwapChainImages(numSwapChainImages)
-{
+	:mDevice(device), mNumSwapChainImages(numSwapChainImages) {
 	// Loads model and its vertices and indices.
 	tinyobj::attrib_t attrib;
 	std::vector<tinyobj::shape_t> shapes;
@@ -20,29 +19,22 @@ Mesh::Mesh(std::string fileLocation, VDevice& device, size_t numSwapChainImages)
 	// Gets unique vertices and the indices to reduce the amount of vertices being drawn by the GPU
 	std::unordered_map<Vertex, uint32_t> uniqueVertices{};
 
-	for (const auto& shape : shapes)
-	{
-		for (const auto& index : shape.mesh.indices)
-		{
+	for (const auto& shape : shapes) {
+		for (const auto& index : shape.mesh.indices) {
 			Vertex vertex{};
 
-			vertex.pos =
-			{
+			vertex.pos = {
 				attrib.vertices[3 * index.vertex_index + 0],
 				attrib.vertices[3 * index.vertex_index + 1],
-				attrib.vertices[3 * index.vertex_index + 2]
-			};
+				attrib.vertices[3 * index.vertex_index + 2] };
 
-			vertex.texCoord =
-			{
+			vertex.texCoord = {
 				attrib.texcoords[2 * index.texcoord_index + 0],
-				1.0f - attrib.texcoords[2 * index.texcoord_index + 1]
-			};
+				1.0f - attrib.texcoords[2 * index.texcoord_index + 1] };
 
 			vertex.color = { 1.0f, 1.0f, 1.0f };
 
-			if (uniqueVertices.count(vertex) == 0)
-			{
+			if (uniqueVertices.count(vertex) == 0) {
 				uniqueVertices[vertex] = static_cast<uint32_t>(mVertices.size());
 				mVertices.push_back(vertex);
 			}
@@ -54,19 +46,15 @@ Mesh::Mesh(std::string fileLocation, VDevice& device, size_t numSwapChainImages)
 	CORE_INFO("Model loaded successfully.");
 }
 
-Mesh::~Mesh()
-{
-}
+Mesh::~Mesh() {}
 
-void Mesh::createBuffers()
-{
+void Mesh::createBuffers() {
 	createVertexBuffer();
 	createIndexBuffer();
 	createUniformBuffers();
 }
 
-void Mesh::createVertexBuffer()
-{
+void Mesh::createVertexBuffer() {
 	// Abstract this later?
 	VkBufferCreateInfo bufferInfo{};
 	bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
@@ -90,8 +78,7 @@ void Mesh::createVertexBuffer()
 	CORE_TRACE("Vertex buffer created.");
 }
 
-void Mesh::createIndexBuffer()
-{
+void Mesh::createIndexBuffer() {
 	// Same as above? Just for indices? HERES TO HOPING
 	// Abstract this later?
 	VkBufferCreateInfo bufferInfo{};
@@ -116,12 +103,10 @@ void Mesh::createIndexBuffer()
 	CORE_TRACE("Index buffer created.");
 }
 
-void Mesh::createUniformBuffers()
-{
+void Mesh::createUniformBuffers() {
 	mUniformBuffers.resize(mNumSwapChainImages);
 
-	for (size_t i = 0; i < mNumSwapChainImages; i++)
-	{
+	for (size_t i = 0; i < mNumSwapChainImages; i++) {
 		VkBufferCreateInfo bufferInfo{};
 		bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
 		bufferInfo.size = sizeof(UniformBufferObject);
@@ -138,8 +123,7 @@ void Mesh::createUniformBuffers()
 	}
 }
 
-void Mesh::updateUniformBuffers(VkExtent2D extent, uint32_t currentImage)
-{
+void Mesh::updateUniformBuffers(VkExtent2D extent, uint32_t currentImage) {
 	// Calculate time in seconds
 	static auto startTime = std::chrono::high_resolution_clock::now();
 	auto currentTime = std::chrono::high_resolution_clock::now();
@@ -169,6 +153,6 @@ void Mesh::updateUniformBuffers(VkExtent2D extent, uint32_t currentImage)
 	memcpy(data, &ubo, sizeof(ubo));
 	vmaUnmapMemory(mDevice.mAllocator, mUniformBuffers[currentImage].mAlloc);
 
-	// Doing uniform buffers this way is not the most efficent way to pass frequently changing values to teh shader.
+	// Doing uniform buffers this way is not the most efficent way to pass frequently changing values to the shader.
 	// A more efficent way to pass a small buffer of data to shaders are PUSH CONSTANTS.
 }

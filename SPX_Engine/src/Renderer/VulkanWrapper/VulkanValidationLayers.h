@@ -10,7 +10,6 @@ public:
 	// TODO: Have this call DestroyDebugUtilsMessengerEXT. Have to give this class a reference to the instance to do this.
 	~VulkanValidationLayers();
 
-
 	bool checkValidationLayerSupport();
 	// Called by renderer.
 	void init(VkInstance instance);

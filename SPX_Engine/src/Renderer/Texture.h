@@ -6,9 +6,7 @@ class VDevice;
 class VCommandPool;
 class VImage;
 
-
-class Texture
-{
+class Texture {
 public:
 	Texture(std::string texturePath, VDevice& device);
 

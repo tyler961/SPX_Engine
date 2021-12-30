@@ -7,8 +7,7 @@ class VDevice;
 
 
 // Image and ImageView are created within the constructor of the VImage.
-class VImage
-{
+class VImage {
 public:
 	VImage(const VDevice& device,
 		VkFormat format,
@@ -19,7 +18,6 @@ public:
 		VkExtent2D imageExtent);
 
 	~VImage();
-
 
 	static void transitionImageLayout(
 		VkImage image,
@@ -39,8 +37,7 @@ public:
 		VkQueue graphicsFamily,
 		VkDevice device);
 
-	static bool hasStencilComponent(VkFormat format)
-	{
+	static bool hasStencilComponent(VkFormat format) {
 		return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 	}
 
@@ -52,8 +49,4 @@ public:
 	VkFormat mFormat{ VK_FORMAT_UNDEFINED };
 	VkImageView mImageView{ VK_NULL_HANDLE };
 	std::string mName; // ?? Idk about keeping this.
-
-
-
-private:
 };

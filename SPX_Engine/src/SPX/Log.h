@@ -3,8 +3,7 @@
 #include "spdlog/spdlog.h"
 #include "spdlog/fmt/ostr.h"
 
-class Log
-{
+class Log {
 public:
 	static void init();
 
